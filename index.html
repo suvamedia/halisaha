@@ -6,10 +6,9 @@
   <meta name="theme-color" content="#101714">
   <meta name="description" content="Halı saha maçları için kolayca takım oluştur, oyuncuları dağıt ve yedekleri belirle.">
   <title>Halı Saha | Takım Planlayıcı</title>
-  <!-- html2canvas kütüphanesi (Saha görselini PNG yapabilmek için) -->
+  <!-- html2canvas: Saha görüntüsünü PNG yapmak ve WhatsApp'ta paylaşmak için -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -352,6 +351,85 @@ footer {
 }
 [hidden] { display: none !important; }
 
+/* Responsive formation and pitch additions */
+.formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+.field-control label { margin-bottom: 8px; }
+.field-control select { width: 100%; min-height: 43px; padding: 10px 12px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 9px; }
+
+.pitch-panel { margin: 18px 0 20px; padding: 18px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; }
+.pitch-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.pitch-top h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 24px; text-transform: uppercase; }
+.pitch-legend { display: flex; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 11px; }
+.pitch-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+.legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+
+/* Saha Alanı */
+.pitch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.1 / 1;
+  min-height: 360px;
+  overflow: hidden;
+  border: 2px solid #d6e8d2;
+  border-radius: 8px;
+  background: repeating-linear-gradient(0deg, #267543 0, #267543 10%, #2d804b 10%, #2d804b 20%);
+  isolation: isolate;
+}
+.pitch:before { content: ""; position: absolute; inset: 4%; border: 2px solid #d7ead3; pointer-events: none; }
+.pitch-midline { position: absolute; left: 4%; right: 4%; top: 50%; border-top: 2px solid #d7ead3; }
+.pitch-circle { position: absolute; left: 50%; top: 50%; width: 18%; aspect-ratio: 1; border: 2px solid #d7ead3; border-radius: 50%; transform: translate(-50%, -50%); }
+.pitch-box { position: absolute; left: 30%; width: 40%; height: 14%; border: 2px solid #d7ead3; }
+.pitch-box.top { top: 4%; border-top: 0; }
+.pitch-box.bottom { bottom: 4%; border-bottom: 0; }
+.pitch-goal { position: absolute; left: 40%; width: 20%; height: 3%; border: 2px solid #d7ead3; background: #d7ead322; }
+.pitch-goal.top { top: 4%; }
+.pitch-goal.bottom { bottom: 4%; }
+
+/* Oyuncu İkonları ve Etiketleri */
+.pitch-player {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: clamp(48px, 9vw, 70px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 2;
+  cursor: pointer;
+  text-align: center;
+}
+.pitch-shirt {
+  width: clamp(24px, 4vw, 32px);
+  height: clamp(24px, 4vw, 32px);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  border: 2px solid #ffffffaa;
+}
+.pitch-player.black .pitch-shirt { background: #101312; color: #fff; border-color: #b7c0b8; }
+.pitch-player.white .pitch-shirt { background: #f7f8f4; color: #171c18; border-color: #ffffff; }
+
+.pitch-name {
+  max-width: 100%;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(16, 23, 20, 0.88);
+  color: #fff;
+  font-size: clamp(8px, 1.7vw, 10px);
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pitch-hint { color: var(--muted); font-size: 11px; line-height: 1.6; margin: 10px 0 0; }
+.player-position { max-width: 92px; padding: 5px 6px; background: #111915; color: var(--muted); border: 1px solid var(--border); border-radius: 7px; font-size: 10px; }
+
 @media (max-width: 600px) {
   .topbar { padding: 18px 16px; }
   .live-label { font-size: 8px; letter-spacing: .7px; }
@@ -366,53 +444,21 @@ footer {
   .results-heading .btn { padding: 0 10px; font-size: 10px; }
   .footer-actions .btn { flex: 1; padding: 0 9px; font-size: 11px; }
   footer { font-size: 8px; letter-spacing: .5px; }
+  .formation-settings { grid-template-columns: 1fr; }
+  .pitch-panel { padding: 12px; }
+  .pitch { min-height: 320px; aspect-ratio: 0.9 / 1; }
+  .pitch-top { align-items: flex-start; flex-direction: column; }
+  .settings { align-items: flex-start; }
+  .setting-copy { max-width: 65%; }
+  .action-row { flex-direction: column; }
+  .action-row .btn { width: 100%; }
+  .footer-actions .btn { min-height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
-    
-/* Responsive formation and pitch additions */
-.formation-settings{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
-.field-control label{margin-bottom:8px}
-.field-control select{width:100%;min-height:43px;padding:10px 12px;background:#111915;color:var(--text);border:1px solid var(--border);border-radius:9px}
-.pitch-panel{margin:18px 0 20px;padding:18px;background:var(--panel);border:1px solid var(--border);border-radius:14px}
-.pitch-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
-.pitch-top h3{margin:0;font-family:"Barlow Condensed",sans-serif;font-size:24px;text-transform:uppercase}
-.pitch-actions{display:flex;gap:8px;align-items:center}
-.pitch-legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px}
-.legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
-.pitch{position:relative;width:100%;aspect-ratio:1.18/1;min-height:310px;overflow:hidden;border:2px solid #d6e8d2;border-radius:8px;background:repeating-linear-gradient(0deg,#267543 0,#267543 10%,#2d804b 10%,#2d804b 20%);isolation:isolate}
-.pitch:before{content:"";position:absolute;inset:5%;border:2px solid #d7ead3;pointer-events:none}
-.pitch-midline{position:absolute;left:5%;right:5%;top:50%;border-top:2px solid #d7ead3}
-.pitch-circle{position:absolute;left:50%;top:50%;width:20%;aspect-ratio:1;border:2px solid #d7ead3;border-radius:50%;transform:translate(-50%,-50%)}
-.pitch-box{position:absolute;left:31%;width:38%;height:13%;border:2px solid #d7ead3}
-.pitch-box.top{top:5%;border-top:0}.pitch-box.bottom{bottom:5%;border-bottom:0}
-.pitch-goal{position:absolute;left:42%;width:16%;height:3%;border:2px solid #d7ead3;background:#d7ead322}
-.pitch-goal.top{top:5%}.pitch-goal.bottom{bottom:5%}
-.pitch-player{position:absolute;transform:translate(-50%,-50%);width:clamp(43px,7vw,64px);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:2;cursor:pointer;text-align:center}
-.pitch-shirt{width:clamp(25px,4.4vw,36px);height:clamp(25px,4.4vw,36px);display:grid;place-items:center;border-radius:50%;font-size:11px;font-weight:800;box-shadow:0 2px 6px #0005;border:2px solid #ffffffaa}
-.pitch-player.black .pitch-shirt{background:#101312;color:#fff;border-color:#b7c0b8}
-.pitch-player.white .pitch-shirt{background:#f7f8f4;color:#171c18;border-color:#fff}
-.pitch-name{max-width:100%;padding:2px 4px;border-radius:4px;background:#101714db;color:#fff;font-size:clamp(8px,1.8vw,10px);line-height:1.15;overflow-wrap:anywhere}
-.pitch-hint{color:var(--muted);font-size:11px;line-height:1.6;margin:10px 0 0}
-.player-position{max-width:92px;padding:5px 6px;background:#111915;color:var(--muted);border:1px solid var(--border);border-radius:7px;font-size:10px}
-.player-row{flex-wrap:wrap}
-.footer-actions{flex-wrap:wrap}
-@media(max-width:600px){
- .formation-settings{grid-template-columns:1fr}
- .pitch-panel{padding:12px}
- .pitch{min-height:270px;aspect-ratio:.88/1}
- .pitch-top{align-items:flex-start;flex-direction:column}
- .settings{align-items:flex-start}
- .setting-copy{max-width:65%}
- .action-row{flex-direction:column}
- .action-row .btn{width:100%}
- .footer-actions .btn{min-height:44px}
-}
-
   </style>
-
 </head>
 <body>
   <header class="topbar">
@@ -440,8 +486,7 @@ footer {
       </div>
 
       <label for="playerInput">Katılımcı isimleri</label>
-      <textarea id="playerInput" rows="7"
-        placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;&#10;Her satıra bir isim yazabilirsin."></textarea>
+      <textarea id="playerInput" rows="7" placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;&#10;Her satıra bir isim yazabilirsin."></textarea>
       <p class="hint">İsimleri alt alta veya virgülle ayırarak yazabilirsin.</p>
 
       <div class="settings">
@@ -478,7 +523,7 @@ footer {
           </select>
         </div>
       </div>
-      <p class="hint">Dizilişler 7 kişilik saha kadrosu (kaleci + 6 oyuncu) için optimize edilmiştir. Farklı kadro sayılarında oyuncular otomatik yerleştirilir.</p>
+      <p class="hint">Dizilişler 7 kişilik saha kadrosu (kaleci + 6 oyuncu) için optimize edilmiştir.</p>
 
       <div class="action-row">
         <button type="button" class="btn btn-primary" id="createTeams">
@@ -500,23 +545,26 @@ footer {
         <button type="button" class="btn btn-secondary" id="reshuffle">↻ Yeniden dağıt</button>
       </div>
 
-      <section class="pitch-panel" aria-label="Takım saha yerleşimi" id="pitchPanel">
+      <section class="pitch-panel" aria-label="Takım saha yerleşimi">
         <div class="pitch-top">
           <h3>⚽ Saha yerleşimi</h3>
-          <div class="pitch-actions">
-            <div class="pitch-legend">
-              <span><i class="legend-dot" style="background:#101312;border:1px solid #aeb9b0"></i>Siyah</span>
-              <span><i class="legend-dot" style="background:#f7f8f4;border:1px solid #aeb9b0"></i>Beyaz</span>
-            </div>
-            <button type="button" class="btn btn-secondary" id="downloadPitchImg" style="font-size: 11px; padding: 0 10px; min-height:34px;">📷 Görsel İndir (PNG)</button>
+          <div class="pitch-legend">
+            <span><i class="legend-dot" style="background:#101312;border:1px solid #aeb9b0"></i>Siyah takım (Üst Yarı)</span>
+            <span><i class="legend-dot" style="background:#f7f8f4;border:1px solid #aeb9b0"></i>Beyaz takım (Alt Yarı)</span>
           </div>
         </div>
+
         <div class="pitch" id="pitch" role="img" aria-label="Takımların saha üzerindeki oyuncu konumları">
           <div class="pitch-midline"></div><div class="pitch-circle"></div>
           <div class="pitch-box top"></div><div class="pitch-box bottom"></div>
           <div class="pitch-goal top"></div><div class="pitch-goal bottom"></div>
         </div>
-        <p class="pitch-hint">Oyuncunun saha üzerindeki konumunu değiştirmek için takım listesindeki pozisyon menüsünü kullan. Saha üstten görünür; iki takım karşılıklı gösterilir.</p>
+
+        <div class="pitch-actions">
+          <button type="button" class="btn btn-primary" id="downloadPitchImg">🖼️ Saha Görselini İndir (PNG)</button>
+          <button type="button" class="btn btn-secondary" id="sharePitchImg">📱 WhatsApp'a Saha Görseli Gönder</button>
+        </div>
+        <p class="pitch-hint">Oyuncuların mevkilerini değiştirmek için aşağıdaki listelerden pozisyon seçebilirsiniz.</p>
       </section>
 
       <div class="teams-grid">
@@ -557,10 +605,9 @@ footer {
       <div class="summary-bar" id="summary"></div>
 
       <div class="footer-actions">
-        <button type="button" class="btn btn-primary" id="shareWhatsAppImg">🖼️ Saha Görselini Paylaş</button>
-        <button type="button" class="btn btn-secondary" id="shareWhatsApp">☏ Metin Olarak Paylaş</button>
-        <button type="button" class="btn btn-secondary" id="copyTeams">▣ Takımları kopyala</button>
-        <button type="button" class="btn btn-secondary" id="downloadTeams">↓ TXT indir</button>
+        <button type="button" class="btn btn-primary" id="shareWhatsApp">☏ WhatsApp'ta Metin Olarak Paylaş</button>
+        <button type="button" class="btn btn-secondary" id="copyTeams">▣ Takımları Kopyala</button>
+        <button type="button" class="btn btn-secondary" id="downloadTeams">↓ TXT İndir</button>
       </div>
     </section>
 
@@ -569,6 +616,7 @@ footer {
       <span>MAÇ BİZİM, HEYECAN BİZİM.</span>
     </footer>
   </main>
+
   <script>
 const $ = (id) => document.getElementById(id);
 
@@ -580,7 +628,6 @@ const message = $("message");
 let teams = { black: [], white: [], bench: [] };
 let lastRoster = [];
 let playerPositions = {};
-const formationDefaults = { black: "2-3-1", white: "2-3-1" };
 
 function getPlayers() {
   return playerInput.value
@@ -601,20 +648,16 @@ function showMessage(text, type = "") {
 
 function shuffle(array) {
   const result = [...array];
-
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
-
   return result;
 }
 
 function getTeamSize() {
   const value = Number.parseInt(teamSizeInput.value, 10);
-  return Number.isFinite(value)
-    ? Math.max(1, Math.min(30, value))
-    : 7;
+  return Number.isFinite(value) ? Math.max(1, Math.min(30, value)) : 7;
 }
 
 function createTeams(roster = getPlayers()) {
@@ -626,21 +669,16 @@ function createTeams(roster = getPlayers()) {
     return;
   }
 
-  // Aynı isim birden fazla kez yazılmışsa ayrı katılımcı kabul edilir.
   const size = getTeamSize();
   teamSizeInput.value = size;
 
   const shuffled = shuffle(players);
   teams = { black: [], white: [], bench: [] };
 
-  // Oyuncuları iki takıma dengeli dağıt.
   shuffled.forEach(player => {
     if (teams.black.length >= size && teams.white.length >= size) {
       teams.bench.push(player);
-    } else if (
-      teams.black.length <= teams.white.length &&
-      teams.black.length < size
-    ) {
+    } else if (teams.black.length <= teams.white.length && teams.black.length < size) {
       teams.black.push(player);
     } else if (teams.white.length < size) {
       teams.white.push(player);
@@ -654,10 +692,7 @@ function createTeams(roster = getPlayers()) {
   renderTeams();
 
   if (teams.bench.length) {
-    showMessage(
-      `${players.length} oyuncu dağıtıldı. ${teams.bench.length} kişi yedek listesinde.`,
-      "success"
-    );
+    showMessage(`${players.length} oyuncu dağıtıldı. ${teams.bench.length} kişi yedek listesinde.`, "success");
   } else {
     showMessage("Takımlar hazır! İyi maçlar.", "success");
   }
@@ -687,7 +722,7 @@ function renderPlayerList(elementId, list, source) {
       const position = document.createElement("select");
       position.className = "player-position";
       position.setAttribute("aria-label", `${player} pozisyonu`);
-      position.innerHTML = '<option value="auto">Otomatik pozisyon</option><option value="GK">Kaleci</option><option value="DEF">Defans</option><option value="MID">Orta saha</option><option value="FWD">Forvet</option>';
+      position.innerHTML = '<option value="auto">Otomatik</option><option value="GK">Kaleci</option><option value="DEF">Defans</option><option value="MID">Orta saha</option><option value="FWD">Forvet</option>';
       position.value = playerPositions[player] || "auto";
       position.addEventListener("change", () => {
         playerPositions[player] = position.value;
@@ -698,18 +733,9 @@ function renderPlayerList(elementId, list, source) {
     }
 
     const targets = {
-      black: [
-        ["white", "Beyaz takıma taşı"],
-        ["bench", "Yedeğe taşı"]
-      ],
-      white: [
-        ["black", "Siyah takıma taşı"],
-        ["bench", "Yedeğe taşı"]
-      ],
-      bench: [
-        ["black", "Siyah takıma al"],
-        ["white", "Beyaz takıma al"]
-      ]
+      black: [["white", "Beyaz takıma"], ["bench", "Yedeğe"]],
+      white: [["black", "Siyah takıma"], ["bench", "Yedeğe"]],
+      bench: [["black", "Siyah takıma"], ["white", "Beyaz takıma"]]
     };
 
     targets[source].forEach(([target, label]) => {
@@ -717,7 +743,6 @@ function renderPlayerList(elementId, list, source) {
       button.type = "button";
       button.className = "move-btn";
       button.textContent = target === "bench" ? "↓" : target === "black" ? "S" : "B";
-      button.setAttribute("aria-label", `${player}: ${label}`);
       button.title = label;
       button.addEventListener("click", () => movePlayer(source, index, target));
       row.append(button);
@@ -764,8 +789,7 @@ function renderTeams() {
   renderPitch();
 
   const total = teams.black.length + teams.white.length + teams.bench.length;
-  const empty = Math.max(0, size - teams.black.length) +
-                Math.max(0, size - teams.white.length);
+  const empty = Math.max(0, size - teams.black.length) + Math.max(0, size - teams.white.length);
 
   $("summary").innerHTML =
     `<strong>${total} oyuncu</strong> dağıtıldı · ` +
@@ -774,25 +798,37 @@ function renderTeams() {
     `Boş kontenjan: <strong>${empty}</strong>`;
 }
 
-
+/* YARI SAHA HESAPLAMASI (Siyah: Üst %8-%42 | Beyaz: Alt %58-%92) */
 function formationRows(team, key) {
   const formation = $(key === "black" ? "blackFormation" : "whiteFormation").value || "2-3-1";
   const groups = formation.split("-").map(Number);
   const players = [...team];
   const keeper = players.shift();
-  const rows = [{ player: keeper, role: "GK", y: key === "black" ? 91 : 9 }];
+
+  // Y-Eksen Sınırları
+  const isBlack = key === "black";
+  const gkY = isBlack ? 9 : 91; 
+  const rowYs = isBlack ? [20, 31, 42] : [80, 69, 58];
+
+  const rows = [{ player: keeper, role: "GK", y: gkY }];
   let remaining = players;
-  let rowYs = key === "black" ? [75, 56, 36] : [25, 44, 64];
+
   groups.forEach((count, rowIndex) => {
     for (let i = 0; i < count && remaining.length; i++) {
       const player = remaining.shift();
-      rows.push({ player, role: ["DEF", "MID", "FWD"][rowIndex] || "MID", y: rowYs[rowIndex] || (key === "black" ? 30 : 70) });
+      rows.push({
+        player,
+        role: ["DEF", "MID", "FWD"][rowIndex] || "MID",
+        y: rowYs[rowIndex] || (isBlack ? 35 : 65)
+      });
     }
   });
+
   while (remaining.length) {
     const player = remaining.shift();
-    rows.push({ player, role: "MID", y: key === "black" ? 50 : 50 });
+    rows.push({ player, role: "MID", y: isBlack ? 35 : 65 });
   }
+
   return rows;
 }
 
@@ -800,30 +836,40 @@ function renderPitch() {
   const pitch = $("pitch");
   if (!pitch || results.hidden) return;
   pitch.querySelectorAll(".pitch-player").forEach(node => node.remove());
+
   ["black", "white"].forEach(key => {
     const team = teams[key];
     const rows = formationRows(team, key);
+    const isBlack = key === "black";
+
     rows.forEach((entry) => {
       if (!entry.player) return;
+
       const rowPlayers = rows.filter(r => r.y === entry.y);
       const sameRowIndex = rowPlayers.findIndex(r => r.player === entry.player);
-      const x = rowPlayers.length === 1 ? 50 : 50 + (sameRowIndex - (rowPlayers.length - 1) / 2) * Math.min(24, 64 / rowPlayers.length);
+      const x = rowPlayers.length === 1 ? 50 : 50 + (sameRowIndex - (rowPlayers.length - 1) / 2) * Math.min(22, 60 / rowPlayers.length);
+
       let y = entry.y;
       const custom = playerPositions[entry.player];
       if (custom && custom !== "auto" && custom !== "GK") {
-        const roleY = custom === "DEF" ? (key === "black" ? 72 : 28) : custom === "MID" ? 50 : (key === "black" ? 30 : 70);
-        y = roleY;
+        y = custom === "DEF" ? (isBlack ? 20 : 80) :
+            custom === "MID" ? (isBlack ? 31 : 69) :
+            (isBlack ? 42 : 58);
       }
+
       const node = document.createElement("div");
       node.className = `pitch-player ${key}`;
-      node.style.left = `${Math.max(9, Math.min(91, x))}%`;
+      node.style.left = `${Math.max(12, Math.min(88, x))}%`;
       node.style.top = `${y}%`;
+
       const shirt = document.createElement("span");
       shirt.className = "pitch-shirt";
       shirt.textContent = entry.player.trim().split(/\s+/).map(s => s[0]).join("").slice(0, 2).toUpperCase();
+
       const name = document.createElement("span");
       name.className = "pitch-name";
       name.textContent = entry.player;
+
       node.append(shirt, name);
       node.title = `${entry.player} · ${custom && custom !== "auto" ? custom : entry.role}`;
       pitch.append(node);
@@ -856,9 +902,7 @@ function saveState() {
       whiteFormation: $("whiteFormation")?.value || "2-3-1",
       playerPositions
     }));
-  } catch {
-    // Tarayıcı depolaması kapalıysa uygulama yine çalışır.
-  }
+  } catch {}
 }
 
 function restoreState() {
@@ -867,15 +911,11 @@ function restoreState() {
     if (!saved) return;
 
     if (typeof saved.input === "string") playerInput.value = saved.input;
-    if (Number.isFinite(saved.size)) {
-      teamSizeInput.value = Math.max(1, Math.min(30, saved.size));
-    }
+    if (Number.isFinite(saved.size)) teamSizeInput.value = Math.max(1, Math.min(30, saved.size));
     if (saved.blackFormation && $("blackFormation")) $("blackFormation").value = saved.blackFormation;
     if (saved.whiteFormation && $("whiteFormation")) $("whiteFormation").value = saved.whiteFormation;
     if (saved.playerPositions && typeof saved.playerPositions === "object") playerPositions = saved.playerPositions;
-  } catch {
-    // Bozuk veya erişilemeyen kayıt yok sayılır.
-  }
+  } catch {}
 
   updateParticipantCount();
 }
@@ -909,9 +949,7 @@ $("createTeams").addEventListener("click", () => createTeams());
   });
 });
 
-$("reshuffle").addEventListener("click", () => {
-  createTeams(lastRoster);
-});
+$("reshuffle").addEventListener("click", () => createTeams(lastRoster));
 
 $("clearAll").addEventListener("click", () => {
   playerInput.value = "";
@@ -925,7 +963,7 @@ $("clearAll").addEventListener("click", () => {
 
 function getTeamText() {
   const format = (title, players) =>
-    `${title}\n${players.length ? players.map((p, i) => `${i + 1}. ${p}`).join("\n") : "Henüz oyuncu yok"}\n`;
+    `${title}\n${players.length ? players.map((p, i) => `${i + 1}.${p}`).join("\n") : "Henüz oyuncu yok"}\n`;
 
   return [
     "⚽ HALI SAHA TAKIMLARI",
@@ -939,83 +977,68 @@ function getTeamText() {
   ].filter(Boolean).join("\n");
 }
 
-/* Saha alanını Canvas görseline çeviren yardımcı fonksiyon */
+/* Görsel Oluşturma (Canvas) Fonksiyonu */
 async function generatePitchCanvas() {
-  const pitchPanel = $("pitchPanel");
-  showMessage("Saha görseli oluşturuluyor...", "");
+  const pitchPanel = document.querySelector(".pitch-panel");
+  if (!pitchPanel) return null;
   return await html2canvas(pitchPanel, {
     backgroundColor: "#19221e",
-    scale: 2, // Yüksek çözünürlük HD için
-    useCORS: true,
-    logging: false
+    scale: 2,
+    useCORS: true
   });
 }
 
-/* Görseli İndir Butonu Fonksiyonu */
-async function downloadPitchImage() {
-  try {
-    const canvas = await generatePitchCanvas();
-    const image = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = image;
-    link.download = "saha-yerlesimi.png";
-    link.click();
-    showMessage("Saha görseli cihazınıza indirildi!", "success");
-  } catch (err) {
-    console.error(err);
-    showMessage("Görsel oluşturulurken bir hata oluştu.", "error");
-  }
-}
+/* Görsel İndir (PNG) */
+$("downloadPitchImg").addEventListener("click", async () => {
+  showMessage("Saha görseli hazırlanıyor...", "success");
+  const canvas = await generatePitchCanvas();
+  if (!canvas) return;
 
-/* WhatsApp Görsel/Resimli Paylaşım Fonksiyonu */
-async function shareWhatsAppImage() {
-  try {
-    const canvas = await generatePitchCanvas();
-    
-    // Mobil veya destekleyen tarayıcılarda Web Share API (File) kullanımı
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        showMessage("Görsel oluşturulamadı.", "error");
-        return;
-      }
-      
-      const file = new File([blob], "saha-yerlesimi.png", { type: "image/png" });
-      
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            title: "Halı Saha Yerleşimi",
-            text: getTeamText(),
-            files: [file]
-          });
-          showMessage("Saha görseli başarıyla paylaşıldı!", "success");
-        } catch (shareErr) {
-          if (shareErr.name !== "AbortError") {
-            downloadPitchImage();
-            window.open("https://wa.me/?text=" + encodeURIComponent(getTeamText()), "_blank");
-          }
+  const link = document.createElement("a");
+  link.download = "halisaha-saha-dizilisi.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  showMessage("Saha görseli cihazınıza indirildi!", "success");
+});
+
+/* WhatsApp Görsel / Web Share Paylaşım */
+$("sharePitchImg").addEventListener("click", async () => {
+  showMessage("Görsel hazırlanıyor...", "success");
+  const canvas = await generatePitchCanvas();
+  if (!canvas) return;
+
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], "halisaha-saha-dizilisi.png", { type: "image/png" });
+    const shareText = getTeamText();
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: "Halı Saha Dizilişi",
+          text: shareText,
+          files: [file]
+        });
+        showMessage("Saha görseli paylaşıldı!", "success");
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          showMessage("Paylaşım esnasında bir sorun oluştu.", "error");
         }
-      } else {
-        // Doğrudan dosya paylaşımını desteklemeyen masaüstü vb. tarayıcılar için resmi indirip WhatsApp Metin linkini açma
-        downloadPitchImage();
-        setTimeout(() => {
-          window.open("https://wa.me/?text=" + encodeURIComponent("⚽ Saha görseli indirildi, resim olarak ekleyebilirsiniz!\n\n" + getTeamText()), "_blank");
-        }, 500);
       }
-    }, "image/png");
+    } else {
+      const link = document.createElement("a");
+      link.download = "halisaha-saha-dizilisi.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
 
-  } catch (err) {
-    console.error(err);
-    showMessage("Paylaşım esnasında bir sorun oluştu.", "error");
-  }
-}
-
-$("downloadPitchImg").addEventListener("click", downloadPitchImage);
-$("shareWhatsAppImg").addEventListener("click", shareWhatsAppImage);
+      const waUrl = "https://wa.me/?text=" + encodeURIComponent(shareText);
+      window.open(waUrl, "_blank", "noopener,noreferrer");
+      showMessage("Görsel indirildi! WhatsApp Web açıldı, görseli sürükleyip gönderebilirsiniz.", "success");
+    }
+  }, "image/png");
+});
 
 $("copyTeams").addEventListener("click", async () => {
   const text = getTeamText();
-
   try {
     await navigator.clipboard.writeText(text);
     showMessage("Takım listesi kopyalandı!", "success");
@@ -1024,14 +1047,9 @@ $("copyTeams").addEventListener("click", async () => {
     area.value = text;
     document.body.append(area);
     area.select();
-
     const copied = document.execCommand("copy");
     area.remove();
-
-    showMessage(
-      copied ? "Takım listesi kopyalandı!" : "Kopyalama başarısız. TXT indirmeyi dene.",
-      copied ? "success" : "error"
-    );
+    showMessage(copied ? "Takım listesi kopyalandı!" : "Kopyalama başarısız.", copied ? "success" : "error");
   }
 });
 
@@ -1041,10 +1059,7 @@ $("shareWhatsApp").addEventListener("click", () => {
 });
 
 $("downloadTeams").addEventListener("click", () => {
-  const blob = new Blob(["\uFEFF" + getTeamText()], {
-    type: "text/plain;charset=utf-8"
-  });
-
+  const blob = new Blob(["\uFEFF" + getTeamText()], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -1053,6 +1068,7 @@ $("downloadTeams").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
-restoreState();</script>
+restoreState();
+  </script>
 </body>
 </html>
