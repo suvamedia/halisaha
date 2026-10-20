@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101714">
+  <meta name="description" content="Halı saha maçları için kolayca takım oluştur, oyuncuları dağıt ve yedekleri belirle.">
+  <title>Halı Saha | Takım Planlayıcı</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Halı Saha ana sayfa">
+      <span class="brand-icon">⚽</span>
+      <span>SAHA<span class="brand-light">PLAN</span></span>
+    </a>
+    <span class="live-label"><span></span> MAÇ ORGANİZASYONU</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="eyebrow">MAÇ GÜNÜ HAZIRLIĞI</div>
+      <h1>Takımını kur.<br><span>Maça hazır ol.</span></h1>
+      <p>Oyuncuları listele, takımları oluştur ve sahaya çık.</p>
+    </section>
+
+    <section class="setup panel">
+      <div class="section-heading">
+        <div>
+          <span class="step">01 / KADRO</span>
+          <h2>Oyuncu listesi</h2>
+        </div>
+        <span class="count-badge" id="participantCount">0 oyuncu</span>
+      </div>
+
+      <label for="playerInput">Katılımcı isimleri</label>
+      <textarea id="playerInput" rows="7"
+        placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;&#10;Her satıra bir isim yazabilirsin."></textarea>
+      <p class="hint">İsimleri alt alta veya virgülle ayırarak yazabilirsin.</p>
+
+      <div class="settings">
+        <div class="setting-copy">
+          <label for="teamSize">Takım başına oyuncu</label>
+          <span>Örn. 7'ye 7 maç için 7</span>
+        </div>
+        <div class="stepper">
+          <button type="button" id="decreaseSize" aria-label="Takım boyutunu azalt">−</button>
+          <input id="teamSize" type="number" min="1" max="30" value="7">
+          <button type="button" id="increaseSize" aria-label="Takım boyutunu artır">+</button>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="btn btn-primary" id="createTeams">
+          <span>⚡</span> Takımları oluştur
+        </button>
+        <button type="button" class="btn btn-secondary" id="clearAll">
+          Temizle
+        </button>
+      </div>
+      <p class="message" id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="results" id="results" hidden>
+      <div class="section-heading results-heading">
+        <div>
+          <span class="step">02 / SAHA DÜZENİ</span>
+          <h2>Takımlar hazır</h2>
+        </div>
+        <button type="button" class="btn btn-secondary" id="reshuffle">↻ Yeniden dağıt</button>
+      </div>
+
+      <div class="teams-grid">
+        <article class="team-card black-team">
+          <div class="team-header">
+            <div class="team-identity">
+              <span class="team-dot"></span>
+              <div><h3>Siyah Takım</h3><span>BLACK SQUAD</span></div>
+            </div>
+            <span class="team-count" id="blackCount">0 / 7</span>
+          </div>
+          <div class="player-list" id="blackPlayers"></div>
+          <div class="empty-slots" id="blackEmpty"></div>
+        </article>
+
+        <article class="team-card white-team">
+          <div class="team-header">
+            <div class="team-identity">
+              <span class="team-dot"></span>
+              <div><h3>Beyaz Takım</h3><span>WHITE SQUAD</span></div>
+            </div>
+            <span class="team-count" id="whiteCount">0 / 7</span>
+          </div>
+          <div class="player-list" id="whitePlayers"></div>
+          <div class="empty-slots" id="whiteEmpty"></div>
+        </article>
+      </div>
+
+      <section class="bench-card" id="benchCard" hidden>
+        <div class="bench-heading">
+          <div><span class="bench-icon">↻</span><h3>Yedek oyuncular</h3></div>
+          <span class="team-count" id="benchCount">0 kişi</span>
+        </div>
+        <div class="player-list" id="benchPlayers"></div>
+        <p class="hint">Fazla oyuncular burada listelenir. İstediğin takıma taşıyabilirsin.</p>
+      </section>
+
+      <div class="summary-bar" id="summary"></div>
+
+      <div class="footer-actions">
+        <button type="button" class="btn btn-primary" id="copyTeams">▣ Takımları kopyala</button>
+        <button type="button" class="btn btn-secondary" id="downloadTeams">↓ TXT indir</button>
+      </div>
+    </section>
+
+    <footer>
+      <span>SAHAPLAN © 2026</span>
+      <span>MAÇ BİZİM, HEYECAN BİZİM.</span>
+    </footer>
+  </main>
+</body>
+</html>
