@@ -370,7 +370,199 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
+    
+/* Responsive formation and pitch additions */
+.formation-settings{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.field-control label{margin-bottom:8px}
+.field-control select{width:100%;min-height:43px;padding:10px 12px;background:#111915;color:var(--text);border:1px solid var(--border);border-radius:9px}
+.pitch-panel{margin:18px 0 20px;padding:18px;background:var(--panel);border:1px solid var(--border);border-radius:14px}
+.pitch-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.pitch-top h3{margin:0;font-family:"Barlow Condensed",sans-serif;font-size:24px;text-transform:uppercase}
+.pitch-legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px}
+.legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.pitch{position:relative;width:100%;aspect-ratio:1.18/1;min-height:310px;overflow:hidden;border:2px solid #d6e8d2;border-radius:8px;background:repeating-linear-gradient(0deg,#267543 0,#267543 10%,#2d804b 10%,#2d804b 20%);isolation:isolate}
+.pitch:before{content:"";position:absolute;inset:5%;border:2px solid #d7ead3;pointer-events:none}
+.pitch-midline{position:absolute;left:5%;right:5%;top:50%;border-top:2px solid #d7ead3}
+.pitch-circle{position:absolute;left:50%;top:50%;width:20%;aspect-ratio:1;border:2px solid #d7ead3;border-radius:50%;transform:translate(-50%,-50%)}
+.pitch-box{position:absolute;left:31%;width:38%;height:13%;border:2px solid #d7ead3}
+.pitch-box.top{top:5%;border-top:0}.pitch-box.bottom{bottom:5%;border-bottom:0}
+.pitch-goal{position:absolute;left:42%;width:16%;height:3%;border:2px solid #d7ead3;background:#d7ead322}
+.pitch-goal.top{top:5%}.pitch-goal.bottom{bottom:5%}
+.pitch-player{position:absolute;transform:translate(-50%,-50%);width:clamp(43px,7vw,64px);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:2;cursor:pointer;text-align:center}
+.pitch-shirt{width:clamp(25px,4.4vw,36px);height:clamp(25px,4.4vw,36px);display:grid;place-items:center;border-radius:50%;font-size:11px;font-weight:800;box-shadow:0 2px 6px #0005;border:2px solid #ffffffaa}
+.pitch-player.black .pitch-shirt{background:#101312;color:#fff;border-color:#b7c0b8}
+.pitch-player.white .pitch-shirt{background:#f7f8f4;color:#171c18;border-color:#fff}
+.pitch-name{max-width:100%;padding:2px 4px;border-radius:4px;background:#101714db;color:#fff;font-size:clamp(8px,1.8vw,10px);line-height:1.15;overflow-wrap:anywhere}
+.pitch-hint{color:var(--muted);font-size:11px;line-height:1.6;margin:10px 0 0}
+.player-position{max-width:92px;padding:5px 6px;background:#111915;color:var(--muted);border:1px solid var(--border);border-radius:7px;font-size:10px}
+.player-row{flex-wrap:wrap}
+.footer-actions{flex-wrap:wrap}
+@media(max-width:600px){
+ .formation-settings{grid-template-columns:1fr}
+ .pitch-panel{padding:12px}
+ .pitch{min-height:270px;aspect-ratio:.88/1}
+ .pitch-top{align-items:flex-start;flex-direction:column}
+ .settings{align-items:flex-start}
+ .setting-copy{max-width:65%}
+ .action-row{flex-direction:column}
+ .action-row .btn{width:100%}
+ .footer-actions .btn{min-height:44px}
+}
+
     </style>
+
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Halı Saha ana sayfa">
+      <span class="brand-icon">⚽</span>
+      <span>SAHA<span class="brand-light">PLAN</span></span>
+    </a>
+    <span class="live-label"><span></span> MAÇ ORGANİZASYONU</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="eyebrow">MAÇ GÜNÜ HAZIRLIĞI</div>
+      <h1>Takımını kur.<br><span>Maça hazır ol.</span></h1>
+      <p>Oyuncuları listele, takımları oluştur ve sahaya çık.</p>
+    </section>
+
+    <section class="setup panel">
+      <div class="section-heading">
+        <div>
+          <span class="step">01 / KADRO</span>
+          <h2>Oyuncu listesi</h2>
+        </div>
+        <span class="count-badge" id="participantCount">0 oyuncu</span>
+      </div>
+
+      <label for="playerInput">Katılımcı isimleri</label>
+      <textarea id="playerInput" rows="7"
+        placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;&#10;Her satıra bir isim yazabilirsin."></textarea>
+      <p class="hint">İsimleri alt alta veya virgülle ayırarak yazabilirsin.</p>
+
+      <div class="settings">
+        <div class="setting-copy">
+          <label for="teamSize">Takım başına oyuncu</label>
+          <span>Örn. 7'ye 7 maç için 7</span>
+        </div>
+        <div class="stepper">
+          <button type="button" id="decreaseSize" aria-label="Takım boyutunu azalt">−</button>
+          <input id="teamSize" type="number" min="1" max="30" value="7">
+          <button type="button" id="increaseSize" aria-label="Takım boyutunu artır">+</button>
+        </div>
+      </div>
+
+      <div class="formation-settings">
+        <div class="field-control">
+          <label for="blackFormation">⚫ Siyah takım dizilişi</label>
+          <select id="blackFormation">
+            <option value="2-3-1">2-3-1 · Dengeli (varsayılan)</option>
+            <option value="3-2-1">3-2-1 · Savunma ağırlıklı</option>
+            <option value="2-2-2">2-2-2 · Dengeli hücum</option>
+            <option value="3-1-2">3-1-2 · Hücum</option>
+            <option value="1-3-2">1-3-2 · Önde baskı</option>
+          </select>
+        </div>
+        <div class="field-control">
+          <label for="whiteFormation">⚪ Beyaz takım dizilişi</label>
+          <select id="whiteFormation">
+            <option value="2-3-1">2-3-1 · Dengeli (varsayılan)</option>
+            <option value="3-2-1">3-2-1 · Savunma ağırlıklı</option>
+            <option value="2-2-2">2-2-2 · Dengeli hücum</option>
+            <option value="3-1-2">3-1-2 · Hücum</option>
+            <option value="1-3-2">1-3-2 · Önde baskı</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">Dizilişler 7 kişilik saha kadrosu (kaleci + 6 oyuncu) için optimize edilmiştir. Farklı kadro sayılarında oyuncular otomatik yerleştirilir.</p>
+
+      <div class="action-row">
+        <button type="button" class="btn btn-primary" id="createTeams">
+          <span>⚡</span> Takımları oluştur
+        </button>
+        <button type="button" class="btn btn-secondary" id="clearAll">
+          Temizle
+        </button>
+      </div>
+      <p class="message" id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="results" id="results" hidden>
+      <div class="section-heading results-heading">
+        <div>
+          <span class="step">02 / SAHA DÜZENİ</span>
+          <h2>Takımlar hazır</h2>
+        </div>
+        <button type="button" class="btn btn-secondary" id="reshuffle">↻ Yeniden dağıt</button>
+      </div>
+
+      <section class="pitch-panel" aria-label="Takım saha yerleşimi">
+        <div class="pitch-top">
+          <h3>⚽ Saha yerleşimi</h3>
+          <div class="pitch-legend">
+            <span><i class="legend-dot" style="background:#101312;border:1px solid #aeb9b0"></i>Siyah takım</span>
+            <span><i class="legend-dot" style="background:#f7f8f4;border:1px solid #aeb9b0"></i>Beyaz takım</span>
+          </div>
+        </div>
+        <div class="pitch" id="pitch" role="img" aria-label="Takımların saha üzerindeki oyuncu konumları">
+          <div class="pitch-midline"></div><div class="pitch-circle"></div>
+          <div class="pitch-box top"></div><div class="pitch-box bottom"></div>
+          <div class="pitch-goal top"></div><div class="pitch-goal bottom"></div>
+        </div>
+        <p class="pitch-hint">Oyuncunun saha üzerindeki konumunu değiştirmek için takım listesindeki pozisyon menüsünü kullan. Saha üstten görünür; iki takım karşılıklı gösterilir.</p>
+      </section>
+
+      <div class="teams-grid">
+        <article class="team-card black-team">
+          <div class="team-header">
+            <div class="team-identity">
+              <span class="team-dot"></span>
+              <div><h3>Siyah Takım</h3><span>BLACK SQUAD</span></div>
+            </div>
+            <span class="team-count" id="blackCount">0 / 7</span>
+          </div>
+          <div class="player-list" id="blackPlayers"></div>
+          <div class="empty-slots" id="blackEmpty"></div>
+        </article>
+
+        <article class="team-card white-team">
+          <div class="team-header">
+            <div class="team-identity">
+              <span class="team-dot"></span>
+              <div><h3>Beyaz Takım</h3><span>WHITE SQUAD</span></div>
+            </div>
+            <span class="team-count" id="whiteCount">0 / 7</span>
+          </div>
+          <div class="player-list" id="whitePlayers"></div>
+          <div class="empty-slots" id="whiteEmpty"></div>
+        </article>
+      </div>
+
+      <section class="bench-card" id="benchCard" hidden>
+        <div class="bench-heading">
+          <div><span class="bench-icon">↻</span><h3>Yedek oyuncular</h3></div>
+          <span class="team-count" id="benchCount">0 kişi</span>
+        </div>
+        <div class="player-list" id="benchPlayers"></div>
+        <p class="hint">Fazla oyuncular burada listelenir. İstediğin takıma taşıyabilirsin.</p>
+      </section>
+
+      <div class="summary-bar" id="summary"></div>
+
+      <div class="footer-actions">
+        <button type="button" class="btn btn-primary" id="shareWhatsApp">☏ WhatsApp'ta paylaş</button>
+        <button type="button" class="btn btn-secondary" id="copyTeams">▣ Takımları kopyala</button>
+        <button type="button" class="btn btn-secondary" id="downloadTeams">↓ TXT indir</button>
+      </div>
+    </section>
+
+    <footer>
+      <span>SAHAPLAN © 2026</span>
+      <span>MAÇ BİZİM, HEYECAN BİZİM.</span>
+    </footer>
+  </main>
   <script>
 const $ = (id) => document.getElementById(id);
 
@@ -381,6 +573,8 @@ const message = $("message");
 
 let teams = { black: [], white: [], bench: [] };
 let lastRoster = [];
+let playerPositions = {};
+const formationDefaults = { black: "2-3-1", white: "2-3-1" };
 
 function getPlayers() {
   return playerInput.value
@@ -483,6 +677,20 @@ function renderPlayerList(elementId, list, source) {
 
     row.append(number, name);
 
+    if (source !== "bench") {
+      const position = document.createElement("select");
+      position.className = "player-position";
+      position.setAttribute("aria-label", `${player} pozisyonu`);
+      position.innerHTML = '<option value="auto">Otomatik pozisyon</option><option value="GK">Kaleci</option><option value="DEF">Defans</option><option value="MID">Orta saha</option><option value="FWD">Forvet</option>';
+      position.value = playerPositions[player] || "auto";
+      position.addEventListener("change", () => {
+        playerPositions[player] = position.value;
+        renderPitch();
+        saveState();
+      });
+      row.append(position);
+    }
+
     const targets = {
       black: [
         ["white", "Beyaz takıma taşı"],
@@ -547,6 +755,7 @@ function renderTeams() {
   renderEmptySlots("whiteEmpty", teams.white);
 
   $("benchCard").hidden = teams.bench.length === 0;
+  renderPitch();
 
   const total = teams.black.length + teams.white.length + teams.bench.length;
   const empty = Math.max(0, size - teams.black.length) +
@@ -559,6 +768,66 @@ function renderTeams() {
     `Boş kontenjan: <strong>${empty}</strong>`;
 
   // Yalnızca yedekleri gösteren satırları yeniden çizmek yeterlidir.
+}
+
+
+function formationRows(team, key) {
+  const formation = $(key === "black" ? "blackFormation" : "whiteFormation").value || "2-3-1";
+  const groups = formation.split("-").map(Number);
+  const players = [...team];
+  const keeper = players.shift();
+  const rows = [{ player: keeper, role: "GK", y: key === "black" ? 91 : 9 }];
+  let remaining = players;
+  let rowYs = key === "black" ? [75, 56, 36] : [25, 44, 64];
+  groups.forEach((count, rowIndex) => {
+    for (let i = 0; i < count && remaining.length; i++) {
+      const player = remaining.shift();
+      rows.push({ player, role: ["DEF", "MID", "FWD"][rowIndex] || "MID", y: rowYs[rowIndex] || (key === "black" ? 30 : 70) });
+    }
+  });
+  // If the squad size doesn't match the selected formation, place remaining players evenly.
+  while (remaining.length) {
+    const player = remaining.shift();
+    rows.push({ player, role: "MID", y: key === "black" ? 50 : 50 });
+  }
+  return rows;
+}
+
+function renderPitch() {
+  const pitch = $("pitch");
+  if (!pitch || results.hidden) return;
+  pitch.querySelectorAll(".pitch-player").forEach(node => node.remove());
+  ["black", "white"].forEach(key => {
+    const team = teams[key];
+    const rows = formationRows(team, key);
+    const side = key === "black" ? 1 : -1;
+    rows.forEach((entry, index) => {
+      if (!entry.player) return;
+      const rowPlayers = rows.filter(r => r.y === entry.y);
+      const sameRowIndex = rowPlayers.findIndex(r => r.player === entry.player);
+      const x = rowPlayers.length === 1 ? 50 : 50 + (sameRowIndex - (rowPlayers.length - 1) / 2) * Math.min(24, 64 / rowPlayers.length);
+      let y = entry.y;
+      // Custom role changes the line while keeping the goalkeeper near the goal.
+      const custom = playerPositions[entry.player];
+      if (custom && custom !== "auto" && custom !== "GK") {
+        const roleY = custom === "DEF" ? (key === "black" ? 72 : 28) : custom === "MID" ? 50 : (key === "black" ? 30 : 70);
+        y = roleY;
+      }
+      const node = document.createElement("div");
+      node.className = `pitch-player ${key}`;
+      node.style.left = `${Math.max(9, Math.min(91, x))}%`;
+      node.style.top = `${y}%`;
+      const shirt = document.createElement("span");
+      shirt.className = "pitch-shirt";
+      shirt.textContent = entry.player.trim().split(/\s+/).map(s => s[0]).join("").slice(0, 2).toUpperCase();
+      const name = document.createElement("span");
+      name.className = "pitch-name";
+      name.textContent = entry.player;
+      node.append(shirt, name);
+      node.title = `${entry.player} · ${custom && custom !== "auto" ? custom : entry.role}`;
+      pitch.append(node);
+    });
+  });
 }
 
 function movePlayer(source, index, target) {
@@ -581,7 +850,10 @@ function saveState() {
   try {
     localStorage.setItem("sahaplan-players", JSON.stringify({
       input: playerInput.value,
-      size: getTeamSize()
+      size: getTeamSize(),
+      blackFormation: $("blackFormation")?.value || "2-3-1",
+      whiteFormation: $("whiteFormation")?.value || "2-3-1",
+      playerPositions
     }));
   } catch {
     // Tarayıcı depolaması kapalıysa uygulama yine çalışır.
@@ -597,6 +869,9 @@ function restoreState() {
     if (Number.isFinite(saved.size)) {
       teamSizeInput.value = Math.max(1, Math.min(30, saved.size));
     }
+    if (saved.blackFormation && $("blackFormation")) $("blackFormation").value = saved.blackFormation;
+    if (saved.whiteFormation && $("whiteFormation")) $("whiteFormation").value = saved.whiteFormation;
+    if (saved.playerPositions && typeof saved.playerPositions === "object") playerPositions = saved.playerPositions;
   } catch {
     // Bozuk veya erişilemeyen kayıt yok sayılır.
   }
@@ -626,6 +901,12 @@ $("increaseSize").addEventListener("click", () => {
 });
 
 $("createTeams").addEventListener("click", () => createTeams());
+["blackFormation", "whiteFormation"].forEach(id => {
+  $(id).addEventListener("change", () => {
+    renderPitch();
+    saveState();
+  });
+});
 
 $("reshuffle").addEventListener("click", () => {
   createTeams(lastRoster);
@@ -645,11 +926,19 @@ function getTeamText() {
   const format = (title, players) =>
     `${title}\n${players.length ? players.map((p, i) => `${i + 1}. ${p}`).join("\n") : "Henüz oyuncu yok"}\n`;
 
+  const positions = (key, players) => {
+    const formation = $(key === "black" ? "blackFormation" : "whiteFormation").value;
+    return `${key === "black" ? "Diziliş Siyah" : "Diziliş Beyaz"}: ${formation}\n` +
+      players.map((p, i) => `${i + 1}. ${p}${playerPositions[p] && playerPositions[p] !== "auto" ? ` (${playerPositions[p]})` : ""}`).join("\n");
+  };
   return [
     "⚽ HALI SAHA TAKIMLARI",
     "",
-    format("⚫ SİYAH TAKIM", teams.black),
-    format("⚪ BEYAZ TAKIM", teams.white),
+    `⚫ SİYAH TAKIM · ${$("blackFormation").value}`,
+    teams.black.length ? teams.black.map((p, i) => `${i + 1}. ${p}${playerPositions[p] && playerPositions[p] !== "auto" ? ` (${playerPositions[p]})` : ""}`).join("\n") : "Henüz oyuncu yok",
+    "",
+    `⚪ BEYAZ TAKIM · ${$("whiteFormation").value}`,
+    teams.white.length ? teams.white.map((p, i) => `${i + 1}. ${p}${playerPositions[p] && playerPositions[p] !== "auto" ? ` (${playerPositions[p]})` : ""}`).join("\n") : "Henüz oyuncu yok",
     teams.bench.length ? format("🔄 YEDEKLER", teams.bench) : ""
   ].filter(Boolean).join("\n");
 }
@@ -677,6 +966,11 @@ $("copyTeams").addEventListener("click", async () => {
   }
 });
 
+$("shareWhatsApp").addEventListener("click", () => {
+  const url = "https://wa.me/?text=" + encodeURIComponent(getTeamText());
+  window.open(url, "_blank", "noopener,noreferrer");
+});
+
 $("downloadTeams").addEventListener("click", () => {
   const blob = new Blob(["\uFEFF" + getTeamText()], {
     type: "text/plain;charset=utf-8"
@@ -691,116 +985,5 @@ $("downloadTeams").addEventListener("click", () => {
 });
 
 restoreState();</script>
-</head>
-<body>
-  <header class="topbar">
-    <a class="brand" href="#" aria-label="Halı Saha ana sayfa">
-      <span class="brand-icon">⚽</span>
-      <span>SAHA<span class="brand-light">PLAN</span></span>
-    </a>
-    <span class="live-label"><span></span> MAÇ ORGANİZASYONU</span>
-  </header>
-
-  <main class="container">
-    <section class="hero">
-      <div class="eyebrow">MAÇ GÜNÜ HAZIRLIĞI</div>
-      <h1>Takımını kur.<br><span>Maça hazır ol.</span></h1>
-      <p>Oyuncuları listele, takımları oluştur ve sahaya çık.</p>
-    </section>
-
-    <section class="setup panel">
-      <div class="section-heading">
-        <div>
-          <span class="step">01 / KADRO</span>
-          <h2>Oyuncu listesi</h2>
-        </div>
-        <span class="count-badge" id="participantCount">0 oyuncu</span>
-      </div>
-
-      <label for="playerInput">Katılımcı isimleri</label>
-      <textarea id="playerInput" rows="7"
-        placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;&#10;Her satıra bir isim yazabilirsin."></textarea>
-      <p class="hint">İsimleri alt alta veya virgülle ayırarak yazabilirsin.</p>
-
-      <div class="settings">
-        <div class="setting-copy">
-          <label for="teamSize">Takım başına oyuncu</label>
-          <span>Örn. 7'ye 7 maç için 7</span>
-        </div>
-        <div class="stepper">
-          <button type="button" id="decreaseSize" aria-label="Takım boyutunu azalt">−</button>
-          <input id="teamSize" type="number" min="1" max="30" value="7">
-          <button type="button" id="increaseSize" aria-label="Takım boyutunu artır">+</button>
-        </div>
-      </div>
-
-      <div class="action-row">
-        <button type="button" class="btn btn-primary" id="createTeams">
-          <span>⚡</span> Takımları oluştur
-        </button>
-        <button type="button" class="btn btn-secondary" id="clearAll">
-          Temizle
-        </button>
-      </div>
-      <p class="message" id="message" role="status" aria-live="polite"></p>
-    </section>
-
-    <section class="results" id="results" hidden>
-      <div class="section-heading results-heading">
-        <div>
-          <span class="step">02 / SAHA DÜZENİ</span>
-          <h2>Takımlar hazır</h2>
-        </div>
-        <button type="button" class="btn btn-secondary" id="reshuffle">↻ Yeniden dağıt</button>
-      </div>
-
-      <div class="teams-grid">
-        <article class="team-card black-team">
-          <div class="team-header">
-            <div class="team-identity">
-              <span class="team-dot"></span>
-              <div><h3>Siyah Takım</h3><span>BLACK SQUAD</span></div>
-            </div>
-            <span class="team-count" id="blackCount">0 / 7</span>
-          </div>
-          <div class="player-list" id="blackPlayers"></div>
-          <div class="empty-slots" id="blackEmpty"></div>
-        </article>
-
-        <article class="team-card white-team">
-          <div class="team-header">
-            <div class="team-identity">
-              <span class="team-dot"></span>
-              <div><h3>Beyaz Takım</h3><span>WHITE SQUAD</span></div>
-            </div>
-            <span class="team-count" id="whiteCount">0 / 7</span>
-          </div>
-          <div class="player-list" id="whitePlayers"></div>
-          <div class="empty-slots" id="whiteEmpty"></div>
-        </article>
-      </div>
-
-      <section class="bench-card" id="benchCard" hidden>
-        <div class="bench-heading">
-          <div><span class="bench-icon">↻</span><h3>Yedek oyuncular</h3></div>
-          <span class="team-count" id="benchCount">0 kişi</span>
-        </div>
-        <div class="player-list" id="benchPlayers"></div>
-        <p class="hint">Fazla oyuncular burada listelenir. İstediğin takıma taşıyabilirsin.</p>
-      </section>
-
-      <div class="summary-bar" id="summary"></div>
-
-      <div class="footer-actions">
-        <button type="button" class="btn btn-primary" id="copyTeams">▣ Takımları kopyala</button>
-        <button type="button" class="btn btn-secondary" id="downloadTeams">↓ TXT indir</button>
-      </div>
-    </section>
-
-    <footer>
-      <span>SAHAPLAN © 2026</span>
-      <span>MAÇ BİZİM, HEYECAN BİZİM.</span>
-    </footer>
-  </main>
 </body>
 </html>
