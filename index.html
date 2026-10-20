@@ -633,7 +633,8 @@ function getPlayers() {
   return playerInput.value
     .split(/[\n,;]+/)
     .map(name => name.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(name => name.toLocaleLowerCase('tr') !== "cihan");
 }
 
 function updateParticipantCount() {
@@ -798,14 +799,12 @@ function renderTeams() {
     `Boş kontenjan: <strong>${empty}</strong>`;
 }
 
-/* YARI SAHA HESAPLAMASI (Siyah: Üst %8-%42 | Beyaz: Alt %58-%92) */
 function formationRows(team, key) {
   const formation = $(key === "black" ? "blackFormation" : "whiteFormation").value || "2-3-1";
   const groups = formation.split("-").map(Number);
   const players = [...team];
   const keeper = players.shift();
 
-  // Y-Eksen Sınırları
   const isBlack = key === "black";
   const gkY = isBlack ? 9 : 91; 
   const rowYs = isBlack ? [20, 31, 42] : [80, 69, 58];
@@ -977,7 +976,6 @@ function getTeamText() {
   ].filter(Boolean).join("\n");
 }
 
-/* Görsel Oluşturma (Canvas) Fonksiyonu */
 async function generatePitchCanvas() {
   const pitchPanel = document.querySelector(".pitch-panel");
   if (!pitchPanel) return null;
@@ -988,7 +986,6 @@ async function generatePitchCanvas() {
   });
 }
 
-/* Görsel İndir (PNG) */
 $("downloadPitchImg").addEventListener("click", async () => {
   showMessage("Saha görseli hazırlanıyor...", "success");
   const canvas = await generatePitchCanvas();
@@ -1001,7 +998,6 @@ $("downloadPitchImg").addEventListener("click", async () => {
   showMessage("Saha görseli cihazınıza indirildi!", "success");
 });
 
-/* WhatsApp Görsel / Web Share Paylaşım */
 $("sharePitchImg").addEventListener("click", async () => {
   showMessage("Görsel hazırlanıyor...", "success");
   const canvas = await generatePitchCanvas();
@@ -1038,7 +1034,7 @@ $("sharePitchImg").addEventListener("click", async () => {
 });
 
 $("copyTeams").addEventListener("click", async () => {
-  const text = getTeamText();
+  const text = getTeamTest();
   try {
     await navigator.clipboard.writeText(text);
     showMessage("Takım listesi kopyalandı!", "success");
