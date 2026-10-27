@@ -302,3 +302,583 @@ textarea:focus { border-color: #8eb64e; outline: none; }
   color: #fff;
   font-size: 9px;
   font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.bench-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: #19221e;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: grab;
+}
+.bench-item .pitch-name { background: transparent; padding: 0; }
+
+.teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.team-card { border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+.team-header { padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.player-list { padding: 10px 14px; }
+.player-row { min-height: 40px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ffffff09; }
+.player-number { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--panel-light); font-size: 10px; font-weight: 800; }
+.player-name { flex: 1; font-size: 12px; }
+
+@media (max-width: 700px) {
+  .pitch-container { flex-direction: column; }
+  .bench-sidebar { width: 100%; max-height: 140px; }
+  .bench-list { flex-direction: row; flex-wrap: wrap; }
+  .formation-settings { grid-template-columns: 1fr; }
+  .teams-grid { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-icon">⚽</span>
+      <span>SAHA<span class="brand-light">PLAN</span></span>
+    </a>
+    <span class="live-label"><span></span> DİNAMİK KADRO PLANLAYICI</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="eyebrow">MAÇ GÜNÜ HAZIRLIĞI</div>
+      <h1>Takımını kur.<br><span>Dizilişini belirle.</span></h1>
+      <p>Oyuncuları listele, takım büyüklüğünü (5 - 10 kişi) seç ve kadroyu sürükleyip sahaya yerleştir.</p>
+    </section>
+
+    <section class="setup panel">
+      <div class="section-heading">
+        <div>
+          <span class="step">01 / KADRO</span>
+          <h2>Oyuncu Listesi</h2>
+        </div>
+        <span class="count-badge" id="participantCount">0 oyuncu</span>
+      </div>
+
+      <label for="playerInput">Katılımcı İsimleri</label>
+      <textarea id="playerInput" placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;Can&#10;Mustafa&#10;Ali&#10;&#10;İsimleri alt alta yazabilirsin."></textarea>
+
+      <div class="settings">
+        <div>
+          <label>Takım Başına Oyuncu Sayısı</label>
+          <span style="font-size:11px; color:var(--muted)">Varsayılan olarak 7'ye 7 maç seçilidir.</span>
+        </div>
+        <div class="team-size-buttons" id="teamSizeButtons">
+          <button type="button" class="size-btn" data-size="5">5'e 5</button>
+          <button type="button" class="size-btn" data-size="6">6'ya 6</button>
+          <button type="button" class="size-btn active" data-size="7">7'ye 7</button>
+          <button type="button" class="size-btn" data-size="8">8'e 8</button>
+          <button type="button" class="size-btn" data-size="9">9'a 9</button>
+          <button type="button" class="size-btn" data-size="10">10'a 10</button>
+        </div>
+      </div>
+
+      <div class="formation-settings">
+        <div class="field-control">
+          <label for="blackFormation">⚫ Siyah Takım Dizilişi</label>
+          <select id="blackFormation"></select>
+        </div>
+        <div class="field-control">
+          <label for="whiteFormation">⚪ Beyaz Takım Dizilişi</label>
+          <select id="whiteFormation"></select>
+        </div>
+      </div>
+      <p class="hint">💡 Diziliş alternatifleri seçtiğiniz takım oyuncu sayısına göre otomatik üretilir.</p>
+
+      <div class="action-row">
+        <button type="button" class="btn btn-primary" id="createTeams">⚡ Takımları Oluştur</button>
+        <button type="button" class="btn btn-secondary" id="clearAll">Temizle</button>
+      </div>
+      <p class="message" id="message"></p>
+    </section>
+
+    <section class="results" id="results" hidden>
+      <div class="section-heading">
+        <div>
+          <span class="step">02 / SAHA YERLEŞİMİ</span>
+          <h2>Sürükle & Bırak Kadro</h2>
+        </div>
+        <button type="button" class="btn btn-secondary" id="reshuffle">↻ Yeniden Karıştır</button>
+      </div>
+
+      <section class="pitch-panel">
+        <div class="pitch-top">
+          <h3>⚽ Saha & Kulübe</h3>
+          <span style="font-size:11px; color:var(--muted)">Oyuncuları boş slotlara sürükleyebilir veya doğrudan değiştirebilirsiniz.</span>
+        </div>
+
+        <div class="pitch-container">
+          <!-- Saha Alanı -->
+          <div class="pitch" id="pitch">
+            <div class="pitch-midline"></div><div class="pitch-circle"></div>
+            <div class="pitch-box top"></div><div class="pitch-box bottom"></div>
+            <div class="pitch-goal top"></div><div class="pitch-goal bottom"></div>
+          </div>
+
+          <!-- Yedek Kulübesi Sidebar -->
+          <div class="bench-sidebar" id="benchSidebar">
+            <h4>🔄 YEDEKLER</h4>
+            <div class="bench-list" id="benchList"></div>
+          </div>
+        </div>
+
+        <div class="action-row" style="margin-top:14px;">
+          <button type="button" class="btn btn-primary" id="downloadPitchImg">🖼️ Saha Görselini İndir (PNG)</button>
+        </div>
+      </section>
+
+      <!-- Oyuncu Pozisyon Listeleri -->
+      <div class="teams-grid">
+        <article class="team-card">
+          <div class="team-header">
+            <h3>⚫ Siyah Takım Kadrosu</h3>
+            <span class="team-count" id="blackCount">0</span>
+          </div>
+          <div class="player-list" id="blackPlayersList"></div>
+        </article>
+        <article class="team-card">
+          <div class="team-header">
+            <h3>⚪ Beyaz Takım Kadrosu</h3>
+            <span class="team-count" id="whiteCount">0</span>
+          </div>
+          <div class="player-list" id="whitePlayersList"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+const $ = (id) => document.getElementById(id);
+
+const playerInput = $("playerInput");
+const results = $("results");
+const message = $("message");
+
+let currentTeamSize = 7; // Default 7 kişi
+let teams = { black: [], white: [], bench: [] };
+let pitchAssignments = {}; // slotId -> playerName
+let draggedPlayer = null;
+
+const STORAGE_KEY = "sahaplan_state_v2";
+
+function saveState() {
+  try {
+    const data = {
+      playerInputText: playerInput.value,
+      currentTeamSize,
+      blackFormation: $("blackFormation")?.value || "3-2-1",
+      whiteFormation: $("whiteFormation")?.value || "3-2-1",
+      teams,
+      pitchAssignments,
+      hasResults: !results.hidden
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+
+    if (data.playerInputText !== undefined) playerInput.value = data.playerInputText;
+    if (data.currentTeamSize) {
+      currentTeamSize = data.currentTeamSize;
+      document.querySelectorAll(".size-btn").forEach(b => {
+        b.classList.toggle("active", parseInt(b.dataset.size, 10) === currentTeamSize);
+      });
+    }
+
+    populateFormationSelects();
+
+    if (data.blackFormation && $("blackFormation")) $("blackFormation").value = data.blackFormation;
+    if (data.whiteFormation && $("whiteFormation")) $("whiteFormation").value = data.whiteFormation;
+
+    if (data.teams) teams = data.teams;
+    if (data.pitchAssignments) pitchAssignments = data.pitchAssignments;
+
+    if (data.hasResults && (teams.black.length > 0 || teams.white.length > 0)) {
+      results.hidden = false;
+      renderAll();
+    }
+    $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+function generateFormations(teamSize) {
+  const outfield = teamSize - 1;
+  if (outfield <= 0) return ["0"];
+
+  const resList = [];
+  
+  function findCombinations(rem, minVal, current) {
+    if (rem === 0) {
+      if (current.length >= 1 && current.length <= 4) {
+        const perms = getPermutations(current);
+        perms.forEach(p => {
+          const str = p.join("-");
+          if (!resList.includes(str)) resList.push(str);
+        });
+      }
+      return;
+    }
+    for (let i = 1; i <= rem; i++) {
+      findCombinations(rem - i, i, [...current, i]);
+    }
+  }
+
+  findCombinations(outfield, 1, []);
+  
+  return resList.sort((a,b) => {
+    if (a === "3-2-1") return -1;
+    if (b === "3-2-1") return 1;
+    return a.length - b.length;
+  });
+}
+
+function getPermutations(arr) {
+  if (arr.length <= 1) return [arr];
+  let res = [];
+  for (let i = 0; i < arr.length; i++) {
+    const current = arr[i];
+    const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+    const remainingPerms = getPermutations(remaining);
+    for (let j = 0; j < remainingPerms.length; j++) {
+      res.push([current, ...remainingPerms[j]]);
+    }
+  }
+  return res;
+}
+
+function populateFormationSelects() {
+  const options = generateFormations(currentTeamSize);
+  
+  ["blackFormation", "whiteFormation"].forEach(id => {
+    const sel = $(id);
+    const prevVal = sel.value;
+    sel.innerHTML = "";
+    options.forEach(f => {
+      const opt = document.createElement("option");
+      opt.value = f;
+      opt.textContent = `${f} Formasyonu`;
+      sel.appendChild(opt);
+    });
+    
+    if (options.includes(prevVal)) {
+      sel.value = prevVal;
+    } else if (options.includes("3-2-1")) {
+      sel.value = "3-2-1";
+    }
+  });
+}
+
+function getPlayers() {
+  return playerInput.value
+    .split(/[\n,;]+/)
+    .map(name => name.trim())
+    .filter(Boolean);
+}
+
+function createTeams() {
+  const players = getPlayers();
+  if (players.length < 2) {
+    showMessage("En az 2 oyuncu girmelisiniz.", "error");
+    return;
+  }
+  
+  const shuffled = [...players].sort(() => Math.random() - 0.5);
+  
+  teams = { black: [], white: [], bench: [] };
+  pitchAssignments = {};
+
+  shuffled.forEach(p => {
+    if (teams.black.length < currentTeamSize) teams.black.push(p);
+    else if (teams.white.length < currentTeamSize) teams.white.push(p);
+    else teams.bench.push(p);
+  });
+
+  results.hidden = false;
+  renderAll();
+  saveState();
+  showMessage(`${currentTeamSize}'ye ${currentTeamSize} maç için takımlar ve diziliş slotları oluşturuldu!`, "success");
+}
+
+function renderAll() {
+  renderPitch();
+  renderBench();
+  renderLists();
+}
+
+function renderPitch() {
+  const pitch = $("pitch");
+  pitch.querySelectorAll(".pitch-slot").forEach(e => e.remove());
+
+  const bForm = $("blackFormation").value || "3-2-1";
+  const wForm = $("whiteFormation").value || "3-2-1";
+
+  createTeamSlots(teams.black, bForm, "black", 8, [20, 32, 44]);
+  createTeamSlots(teams.white, wForm, "white", 92, [80, 68, 56]);
+}
+
+function createTeamSlots(teamPlayers, formationStr, teamKey, gkY, lineYs) {
+  const lines = formationStr.split("-").map(Number);
+  const slotList = [];
+  slotList.push({ id: `${teamKey}_GK`, x: 50, y: gkY, label: "GK" });
+
+  lines.forEach((count, lineIdx) => {
+    const y = lineYs[lineIdx] || (teamKey === "black" ? 30 : 70);
+    for (let i = 0; i < count; i++) {
+      const x = count === 1 ? 50 : 15 + (i * (70 / (count - 1)));
+      slotList.push({ id: `${teamKey}_Line${lineIdx}_Slot${i}`, x, y, label: `P${lineIdx+1}` });
+    }
+  });
+
+  slotList.forEach((s) => {
+    let pName = pitchAssignments[s.id];
+    
+    if (pName && !teamPlayers.includes(pName)) {
+      pName = null;
+      delete pitchAssignments[s.id];
+    }
+
+    if (!pName) {
+      const unassigned = teamPlayers.find(tp => !Object.values(pitchAssignments).includes(tp));
+      if (unassigned) {
+        pName = unassigned;
+        pitchAssignments[s.id] = pName;
+      }
+    }
+
+    buildSlot(s.id, s.x, s.y, pName, teamKey, s.label);
+  });
+}
+
+function buildSlot(slotId, x, y, assignedPlayer, teamKey, label) {
+  const pitch = $("pitch");
+  const slot = document.createElement("div");
+  slot.className = `pitch-slot ${teamKey}`;
+  slot.style.left = `${x}%`;
+  slot.style.top = `${y}%`;
+  slot.dataset.slotId = slotId;
+
+  slot.addEventListener("dragover", e => { e.preventDefault(); slot.classList.add("drag-over"); });
+  slot.addEventListener("dragleave", () => slot.classList.remove("drag-over"));
+  slot.addEventListener("drop", e => handleDropOnSlot(e, slotId, teamKey));
+
+  if (assignedPlayer) {
+    pitchAssignments[slotId] = assignedPlayer;
+    const playerCard = buildPlayerCard(assignedPlayer, teamKey);
+    slot.appendChild(playerCard);
+  } else {
+    delete pitchAssignments[slotId];
+    const emptySpan = document.createElement("span");
+    emptySpan.style.fontSize = "9px";
+    emptySpan.style.opacity = "0.5";
+    emptySpan.textContent = label;
+    slot.appendChild(emptySpan);
+  }
+
+  pitch.appendChild(slot);
+}
+
+function buildPlayerCard(playerName, teamKey) {
+  const card = document.createElement("div");
+  card.className = `player-card ${teamKey}`;
+  card.draggable = true;
+  card.dataset.playerName = playerName;
+
+  const shirt = document.createElement("div");
+  shirt.className = "pitch-shirt";
+  shirt.textContent = playerName.slice(0, 2).toUpperCase();
+
+  const name = document.createElement("div");
+  name.className = "pitch-name";
+  name.textContent = playerName;
+
+  card.appendChild(shirt);
+  card.appendChild(name);
+
+  card.addEventListener("dragstart", () => { draggedPlayer = playerName; });
+  return card;
+}
+
+function renderBench() {
+  const list = $("benchList");
+  list.innerHTML = "";
+  
+  teams.bench.forEach(player => {
+    const item = document.createElement("div");
+    item.className = "bench-item";
+    item.draggable = true;
+    item.dataset.playerName = player;
+
+    const shirt = document.createElement("div");
+    shirt.className = "pitch-shirt";
+    shirt.textContent = player.slice(0, 2).toUpperCase();
+
+    const name = document.createElement("div");
+    name.className = "pitch-name";
+    name.textContent = player;
+
+    item.appendChild(shirt);
+    item.appendChild(name);
+
+    item.addEventListener("dragstart", () => { draggedPlayer = player; });
+    list.appendChild(item);
+  });
+
+  const sidebar = $("benchSidebar");
+  sidebar.addEventListener("dragover", e => e.preventDefault());
+  sidebar.addEventListener("drop", handleDropOnBench);
+}
+
+function handleDropOnSlot(e, targetSlotId, targetTeamKey) {
+  e.preventDefault();
+  $("pitch").querySelectorAll(".pitch-slot").forEach(s => s.classList.remove("drag-over"));
+  if (!draggedPlayer) return;
+
+  const sourceSlotId = Object.keys(pitchAssignments).find(k => pitchAssignments[k] === draggedPlayer);
+  const targetPlayer = pitchAssignments[targetSlotId];
+
+  const sourceTeamKey = teams.black.includes(draggedPlayer) ? "black" : (teams.white.includes(draggedPlayer) ? "white" : "bench");
+
+  if (targetPlayer && targetPlayer !== draggedPlayer) {
+    if (sourceSlotId) {
+      pitchAssignments[sourceSlotId] = targetPlayer;
+      pitchAssignments[targetSlotId] = draggedPlayer;
+      
+      if (sourceTeamKey !== targetTeamKey) {
+        removeFromTeams(draggedPlayer);
+        removeFromTeams(targetPlayer);
+        teams[targetTeamKey].push(draggedPlayer);
+        teams[sourceTeamKey].push(targetPlayer);
+      }
+    } else {
+      pitchAssignments[targetSlotId] = draggedPlayer;
+      removeFromTeams(draggedPlayer);
+      teams[targetTeamKey].push(draggedPlayer);
+
+      removeFromTeams(targetPlayer);
+      teams.bench.push(targetPlayer);
+      delete pitchAssignments[sourceSlotId];
+    }
+  } else {
+    if (sourceSlotId) delete pitchAssignments[sourceSlotId];
+    pitchAssignments[targetSlotId] = draggedPlayer;
+    removeFromTeams(draggedPlayer);
+    teams[targetTeamKey].push(draggedPlayer);
+  }
+
+  draggedPlayer = null;
+  renderAll();
+  saveState();
+}
+
+function handleDropOnBench(e) {
+  e.preventDefault();
+  if (!draggedPlayer) return;
+
+  const sourceSlotId = Object.keys(pitchAssignments).find(k => pitchAssignments[k] === draggedPlayer);
+  if (sourceSlotId) delete pitchAssignments[sourceSlotId];
+
+  removeFromTeams(draggedPlayer);
+  teams.bench.push(draggedPlayer);
+
+  draggedPlayer = null;
+  renderAll();
+  saveState();
+}
+
+function removeFromTeams(player) {
+  teams.black = teams.black.filter(p => p !== player);
+  teams.white = teams.white.filter(p => p !== player);
+  teams.bench = teams.bench.filter(p => p !== player);
+}
+
+function renderLists() {
+  $("blackCount").textContent = `${teams.black.length} oyuncu`;
+  $("whiteCount").textContent = `${teams.white.length} oyuncu`;
+
+  renderTeamList("blackPlayersList", teams.black);
+  renderTeamList("whitePlayersList", teams.white);
+}
+
+function renderTeamList(elementId, list) {
+  const container = $(elementId);
+  container.innerHTML = "";
+  list.forEach((p, idx) => {
+    const row = document.createElement("div");
+    row.className = "player-row";
+    row.innerHTML = `<span class="player-number">${idx+1}</span><span class="player-name">${p}</span>`;
+    container.appendChild(row);
+  });
+}
+
+function showMessage(msg, type="") {
+  message.textContent = msg;
+  message.className = `message ${type}`;
+}
+
+playerInput.addEventListener("input", () => {
+  $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+  saveState();
+});
+
+document.querySelectorAll(".size-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentTeamSize = parseInt(btn.dataset.size, 10);
+    populateFormationSelects();
+    if (!results.hidden) createTeams();
+    saveState();
+  });
+});
+
+$("createTeams").addEventListener("click", createTeams);
+$("reshuffle").addEventListener("click", createTeams);
+$("clearAll").addEventListener("click", () => {
+  playerInput.value = "";
+  teams = { black: [], white: [], bench: [] };
+  pitchAssignments = {};
+  results.hidden = true;
+  localStorage.removeItem(STORAGE_KEY);
+  $("participantCount").textContent = "0 oyuncu";
+  showMessage("Tüm veriler temizlendi.");
+});
+
+["blackFormation", "whiteFormation"].forEach(id => {
+  $(id).addEventListener("change", () => {
+    if (!results.hidden) renderPitch();
+    saveState();
+  });
+});
+
+$("downloadPitchImg").addEventListener("click", async () => {
+  showMessage("PNG hazırlanıyor...", "success");
+  const panel = document.querySelector(".pitch-panel");
+  const canvas = await html2canvas(panel, { backgroundColor: "#19221e", scale: 2 });
+  const a = document.createElement("a");
+  a.download = "halisaha-kadro.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  showMessage("Saha görseli indirildi!", "success");
+});
+
+populateFormationSelects();
+restoreState();
+</script>
+</body>
+</html>
