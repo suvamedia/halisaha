@@ -408,7 +408,7 @@ textarea:focus { border-color: #8eb64e; outline: none; }
           <select id="whiteFormation"></select>
         </div>
       </div>
-      <p class="hint">💡 Her kişi sayısı için en ideal formasyonlar otomatik olarak varsayılan seçilir.</p>
+      <p class="hint">💡 Her kişi sayısı için en ideal formasyonlar otomatik olarak varsayılan seçilir[cite: 1].</p>
 
       <div class="action-row">
         <button type="button" class="btn btn-primary" id="createTeams">⚡ Takımları Oluştur</button>
@@ -484,7 +484,7 @@ let teams = { black: [], white: [], bench: [] };
 let pitchAssignments = {}; 
 let draggedPlayer = null;
 
-const STORAGE_KEY = "sahaplan_state_v7";
+const STORAGE_KEY = "sahaplan_state_v8";
 
 function saveState() {
   try {
@@ -527,7 +527,7 @@ function restoreState() {
       results.hidden = false;
       renderAll();
     }
-    $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+    $("participantCount").textContent = `${getPlayers().length} oyuncu[cite: 1]`;
     return true;
   } catch(e) {
     return false;
@@ -770,25 +770,25 @@ function renderBench() {
 
 function addTouchDragSupport(element, playerName) {
   let clone = null;
-  let offsetX = 0;
-  let offsetY = 0;
+  let halfWidth = 0;
+  let halfHeight = 0;
 
   element.addEventListener("touchstart", (e) => {
     draggedPlayer = playerName;
     const touch = e.touches[0];
     const rect = element.getBoundingClientRect();
     
-    // Parmağın kart üzerindeki tam basıldığı noktayı hesapla (merkezleme hatası olmasın)
-    offsetX = touch.clientX - rect.left;
-    offsetY = touch.clientY - rect.top;
+    // Kartın tam merkezini parmağın altına oturtmak için yarıçap hesaplanır
+    halfWidth = rect.width / 2;
+    halfHeight = rect.height / 2;
 
     clone = element.cloneNode(true);
     clone.style.position = "fixed";
     clone.style.zIndex = "9999";
     clone.style.pointerEvents = "none";
     clone.style.opacity = "0.85";
-    clone.style.left = `${touch.clientX - offsetX}px`;
-    clone.style.top = `${touch.clientY - offsetY}px`;
+    clone.style.left = `${touch.clientX - halfWidth}px`;
+    clone.style.top = `${touch.clientY - halfHeight}px`;
     document.body.appendChild(clone);
   }, {passive: true});
 
@@ -796,8 +796,8 @@ function addTouchDragSupport(element, playerName) {
     if (!clone) return;
     e.preventDefault();
     const touch = e.touches[0];
-    clone.style.left = `${touch.clientX - offsetX}px`;
-    clone.style.top = `${touch.clientY - offsetY}px`;
+    clone.style.left = `${touch.clientX - halfWidth}px`;
+    clone.style.top = `${touch.clientY - halfHeight}px`;
   }, {passive: false});
 
   element.addEventListener("touchend", (e) => {
@@ -883,8 +883,8 @@ function removeFromTeams(player) {
 }
 
 function renderLists() {
-  $("blackCount").textContent = `${teams.black.length} oyuncu`;
-  $("whiteCount").textContent = `${teams.white.length} oyuncu`;
+  $("blackCount").textContent = `${teams.black.length} oyuncu[cite: 1]`;
+  $("whiteCount").textContent = `${teams.white.length} oyuncu[cite: 1]`;
   renderTeamList("blackPlayersList", teams.black);
   renderTeamList("whitePlayersList", teams.white);
 }
@@ -906,7 +906,7 @@ function showMessage(msg, type="") {
 }
 
 playerInput.addEventListener("input", () => {
-  $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+  $("participantCount").textContent = `${getPlayers().length} oyuncu[cite: 1]`;
   saveState();
 });
 
@@ -929,7 +929,7 @@ $("clearAll").addEventListener("click", () => {
   pitchAssignments = {};
   results.hidden = true;
   localStorage.removeItem(STORAGE_KEY);
-  $("participantCount").textContent = "0 oyuncu";
+  $("participantCount").textContent = "0 oyuncu[cite: 1]";
   showMessage("Tüm veriler temizlendi.");
 });
 
