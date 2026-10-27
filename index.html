@@ -669,7 +669,7 @@ function createTeamSlots(teamPlayers, formationStr, teamKey, gkY, lineYs) {
   lines.forEach((count, lineIdx) => {
     const y = lineYs[lineIdx] || (teamKey === "black" ? 30 : 70);
     for (let i = 0; i < count; i++) {
-      const x = count === 1 ? 50 : 15 + (i * (70 / (count - 1)));
+      const x = count === 1 ? 50 : (100 * (i + 1)) / (count + 1);
       slotList.push({ id: `${teamKey}_Line${lineIdx}_Slot${i}`, x, y, label: `P${lineIdx+1}` });
     }
   });
