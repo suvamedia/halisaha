@@ -21,7 +21,8 @@
   --red: #ff7777;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; user-select: none; }
+textarea { user-select: text !important; }
 
 body {
   margin: 0;
@@ -30,15 +31,10 @@ body {
   color: var(--text);
   font-family: Inter, sans-serif;
   font-size: 14px;
-  overflow-x: hidden;
 }
 
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
-button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid var(--green);
-  outline-offset: 3px;
-}
 
 .topbar {
   max-width: 1100px;
@@ -59,27 +55,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   font-weight: 800;
   letter-spacing: 1px;
 }
-.brand-icon { font-size: 25px; }
+.brand-icon { font-size: 22px; }
 .brand-light { color: var(--green); }
 .live-label {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   color: var(--muted);
   font-size: 10px;
   letter-spacing: 1.5px;
   font-weight: 700;
 }
 .live-label > span {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   background: var(--green);
   border-radius: 50%;
-  box-shadow: 0 0 10px #c8fa6880;
+  box-shadow: 0 0 8px #c8fa6880;
 }
 
-.container { max-width: 1000px; margin: auto; padding: 0 20px 40px; }
-.hero { padding: 40px 0 24px; }
+.container { max-width: 950px; margin: auto; padding: 0 16px 40px; }
+.hero { padding: 30px 0 20px; }
 .eyebrow, .step {
   color: var(--green);
   font-size: 10px;
@@ -88,20 +84,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 }
 .hero h1 {
   font-family: "Barlow Condensed", sans-serif;
-  font-size: clamp(40px, 7vw, 64px);
+  font-size: clamp(36px, 6vw, 56px);
   line-height: .98;
   letter-spacing: -1px;
-  margin: 12px 0;
+  margin: 10px 0;
   text-transform: uppercase;
 }
 .hero h1 span { color: var(--green); }
-.hero p { color: var(--muted); line-height: 1.6; margin: 0; }
+.hero p { color: var(--muted); line-height: 1.6; font-size: 13px; }
 
 .panel {
   background: #19221eeF;
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   box-shadow: 0 16px 45px #00000015;
 }
 
@@ -109,17 +105,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 .section-heading h2 {
   font-family: "Barlow Condensed", sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   margin: 4px 0 0;
   text-transform: uppercase;
 }
 .count-badge, .team-count {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--green);
@@ -129,239 +125,203 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   white-space: nowrap;
 }
 
-label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
 
 textarea {
   width: 100%;
   resize: vertical;
-  min-height: 120px;
-  padding: 14px;
+  min-height: 110px;
+  padding: 12px;
   background: #111915;
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text);
-  line-height: 1.7;
+  line-height: 1.6;
 }
-textarea::placeholder { color: #68786d; }
 textarea:focus { border-color: #8eb64e; outline: none; }
 
-.hint { font-size: 11px; color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
+.hint { font-size: 11px; color: var(--muted); line-height: 1.5; margin: 6px 0 0; }
 
 .settings {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  margin-top: 20px;
-  padding: 16px 0;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
-.setting-copy label { margin: 0 0 4px; }
-.setting-copy span { font-size: 11px; color: var(--muted); }
 
-.stepper {
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  overflow: hidden;
+.team-size-buttons {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  width: 100%;
 }
-.stepper button {
-  width: 38px;
+
+.size-btn {
   height: 38px;
-  color: var(--green);
   background: var(--panel-light);
-  border: 0;
-  font-size: 20px;
-}
-.stepper input {
-  width: 50px;
-  height: 38px;
-  color: white;
-  background: transparent;
-  border: 0;
-  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
   font-weight: 800;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  padding: 0;
 }
 
-.formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
-.field-control select { width: 100%; min-height: 42px; padding: 10px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 9px; }
-
-.action-row, .footer-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+.size-btn:hover { border-color: var(--green); color: var(--green); }
+.size-btn.active {
+  background: var(--green);
+  color: #182116;
+  border-color: var(--green);
+  box-shadow: 0 0 10px rgba(200, 250, 104, 0.3);
 }
+
+.formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.field-control select { width: 100%; min-height: 40px; padding: 6px 10px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+
+.action-row, .footer-actions { display: flex; gap: 10px; margin-top: 16px; }
 .btn {
-  min-height: 43px;
-  padding: 0 18px;
-  border-radius: 9px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
   border: 1px solid transparent;
   font-weight: 800;
   font-size: 12px;
   transition: transform .15s, background .15s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
 }
 .btn:hover { transform: translateY(-1px); }
 .btn-primary { background: var(--green); color: #182116; }
-.btn-primary:hover { background: #d9ff98; }
 .btn-secondary { background: var(--panel-light); border-color: var(--border); color: var(--text); }
-.btn-secondary:hover { background: #2a3930; }
 .action-row .btn-primary { flex: 1; }
-.message { color: var(--muted); font-size: 12px; margin: 12px 0 0; }
+.message { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .message.error { color: var(--red); }
 .message.success { color: var(--green); }
 
-/* PITCH PANEL & DRAG-DROP AREA */
-.results { margin-top: 36px; }
+.results { margin-top: 30px; }
+
+/* Saha Paneli ve Taşmayı Önleyen Fit Yapı */
 .pitch-panel {
-  margin: 18px 0 24px;
+  margin: 16px 0;
   padding: 16px;
   background: #19221e;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  width: 100%;
-  box-sizing: border-box;
+  border-radius: 14px;
+  max-width: 100%;
+  overflow: hidden;
 }
-.pitch-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-.pitch-top h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 26px; text-transform: uppercase; }
-
-/* DÜZENLİ YEŞİL SAHA */
-.pitch-wrapper {
-  position: relative;
-  width: 100%;
-  padding: 8px;
-  background: #141d18;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-sizing: border-box;
-}
+.pitch-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.pitch-top h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 22px; text-transform: uppercase; }
 
 .pitch-container {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  align-items: stretch;
   width: 100%;
 }
+
+.bench-sidebar {
+  width: 140px;
+  flex-shrink: 0;
+  background: #111915;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 420px;
+}
+.bench-sidebar h4 { margin: 0 0 4px 0; font-size: 10px; text-transform: uppercase; color: var(--green); letter-spacing: 1px; }
+.bench-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
 
 .pitch {
   position: relative;
+  flex: 1;
   width: 100%;
-  max-width: 100%;
-  aspect-ratio: 0.85 / 1;
+  max-width: 600px;
+  aspect-ratio: 0.95 / 1;
+  min-height: 380px;
   max-height: 65vh;
-  margin: 0 auto;
   border: 2px solid #d6e8d2;
-  border-radius: 10px;
-  background: repeating-linear-gradient(0deg, #246f3f 0, #246f3f 10%, #2b7a48 10%, #2b7a48 20%);
-  overflow: hidden;
-  user-select: none;
-  touch-action: none; /* Mobil kaydırma çakışmasını önler */
+  border-radius: 8px;
+  background: repeating-linear-gradient(0deg, #267543 0, #267543 10%, #2d804b 10%, #2d804b 20%);
+  isolation: isolate;
+  margin: auto;
 }
-.pitch-midline { position: absolute; left: 4%; right: 4%; top: 50%; border-top: 2px dashed #d7ead377; }
-.pitch-circle { position: absolute; left: 50%; top: 50%; width: 22%; aspect-ratio: 1; border: 2px solid #d7ead3aa; border-radius: 50%; transform: translate(-50%, -50%); }
-.pitch-box { position: absolute; left: 25%; width: 50%; height: 15%; border: 2px solid #d7ead3aa; }
-.pitch-box.top { top: 0; border-top: 0; }
-.pitch-box.bottom { bottom: 0; border-bottom: 0; }
-.pitch-goal { position: absolute; left: 38%; width: 24%; height: 3.5%; border: 2px solid #d7ead3; background: rgba(215, 234, 211, 0.25); }
-.pitch-goal.top { top: 0; }
-.pitch-goal.bottom { bottom: 0; }
+.pitch:before { content: ""; position: absolute; inset: 3%; border: 2px solid #d7ead3; pointer-events: none; }
+.pitch-midline { position: absolute; left: 3%; right: 3%; top: 50%; border-top: 2px solid #d7ead3; }
+.pitch-circle { position: absolute; left: 50%; top: 50%; width: 18%; aspect-ratio: 1; border: 2px solid #d7ead3; border-radius: 50%; transform: translate(-50%, -50%); }
+.pitch-box { position: absolute; left: 30%; width: 40%; height: 14%; border: 2px solid #d7ead3; }
+.pitch-box.top { top: 3%; border-top: 0; }
+.pitch-box.bottom { bottom: 3%; border-bottom: 0; }
+.pitch-goal { position: absolute; left: 40%; width: 20%; height: 3%; border: 2px solid #d7ead3; background: #d7ead322; }
+.pitch-goal.top { top: 3%; }
+.pitch-goal.bottom { bottom: 3%; }
 
-/* SAHA İÇİ SLOTLAR (DRAG TARGETS) */
+/* Saha Slotları & Oyuncular */
 .pitch-slot {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: clamp(50px, 13vw, 84px);
-  min-height: clamp(52px, 13vw, 68px);
-  border: 2px dashed rgba(255, 255, 255, 0.4);
-  border-radius: 10px;
-  background: rgba(16, 23, 20, 0.45);
+  width: clamp(44px, 7vw, 62px);
+  min-height: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 3px;
-  transition: transform 0.15s ease, background 0.15s ease;
+  gap: 2px;
   z-index: 2;
-  box-sizing: border-box;
+  border-radius: 6px;
+  padding: 3px;
+  transition: background 0.2s, border-color 0.2s;
+  border: 1px dashed rgba(255,255,255,0.25);
 }
 .pitch-slot.drag-over {
+  background: rgba(200, 250, 104, 0.35);
   border-color: var(--green);
-  background: rgba(200, 250, 104, 0.3);
-  transform: translate(-50%, -50%) scale(1.08);
-}
-.pitch-slot.occupied {
-  border-style: solid;
-  border-color: rgba(255, 255, 255, 0.6);
-  background: rgba(16, 23, 20, 0.75);
 }
 
-/* OYUNCU KARTI / İKONU */
 .player-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: grab;
   width: 100%;
-  user-select: none;
   touch-action: none;
 }
 .player-card:active { cursor: grabbing; }
 
 .pitch-shirt {
-  width: clamp(24px, 6vw, 30px);
-  height: clamp(24px, 6vw, 30px);
-  border-radius: 50%;
+  width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
-  font-size: clamp(9px, 2.5vw, 11px);
+  border-radius: 50%;
+  font-size: 9px;
   font-weight: 800;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-  border: 2px solid #fff;
-  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  border: 2px solid #ffffff;
 }
-.black-player .pitch-shirt, .black-team .pitch-shirt { background: #101312; color: #fff; border-color: #aeb9b0; }
-.white-player .pitch-shirt, .white-team .pitch-shirt { background: #f7f8f4; color: #171c18; border-color: #ffffff; }
+.black .pitch-shirt { background: #101312; color: #fff; }
+.white .pitch-shirt { background: #f7f8f4; color: #171c18; }
+.bench-item .pitch-shirt { background: #d4a327; color: #fff; }
 
 .pitch-name {
-  font-size: clamp(8px, 2.2vw, 10px);
-  font-weight: 700;
-  color: #fff;
-  background: rgba(10, 15, 12, 0.9);
-  padding: 1px 4px;
-  border-radius: 4px;
-  margin-top: 2px;
   max-width: 100%;
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: rgba(16, 23, 20, 0.9);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
-  pointer-events: none;
 }
 
-/* YEDEK KULÜBESİ SIDEBAR */
-.bench-sidebar {
-  padding: 12px;
-  background: #101714;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-  touch-action: none;
-}
-.bench-sidebar h4 {
-  margin: 0 0 10px 0;
-  font-size: 12px;
-  color: var(--gold);
-}
-.bench-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 50px;
-}
 .bench-item {
   display: flex;
   align-items: center;
@@ -371,36 +331,27 @@ textarea:focus { border-color: #8eb64e; outline: none; }
   border: 1px solid var(--border);
   border-radius: 6px;
   cursor: grab;
-  user-select: none;
   touch-action: none;
 }
 .bench-item .pitch-name { background: transparent; padding: 0; }
 
-/* KADRO LİSTELERİ */
-.teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
-.team-card { overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
-.team-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); }
-.team-identity { display: flex; align-items: center; gap: 10px; }
-.team-dot { width: 30px; height: 30px; border-radius: 8px; border: 2px solid #58645c; }
-.black-team .team-dot { background: #080a09; border-color: #657169; }
-.white-team .team-dot { background: #f6f7f4; border-color: #d3d9d2; }
-.team-identity h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 20px; text-transform: uppercase; }
-
-.player-list { padding: 10px 14px; }
-.player-row { min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #ffffff09; }
-.player-row:last-child { border-bottom: 0; }
-.player-number { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 6px; background: var(--panel-light); color: var(--muted); font-size: 10px; font-weight: 800; }
-.player-name { flex: 1; font-weight: 600; font-size: 12px; }
-
-footer { display: flex; justify-between; padding: 30px 0; margin-top: 20px; color: #69776d; font-size: 10px; letter-spacing: 1px; }
-[hidden] { display: none !important; }
+.teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.team-card { border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+.team-header { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.team-header h3 { font-size: 14px; margin: 0; }
+.player-list { padding: 8px 12px; }
+.player-row { min-height: 36px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #ffffff09; font-size: 12px; }
+.player-number { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; background: var(--panel-light); font-size: 9px; font-weight: 800; }
+.player-name { flex: 1; }
 
 @media (max-width: 650px) {
-  .hero h1 { font-size: 40px; }
-  .teams-grid { grid-template-columns: 1fr; }
+  .pitch-container { flex-direction: column-reverse; }
+  .bench-sidebar { width: 100%; max-height: 110px; }
+  .bench-list { flex-direction: row; flex-wrap: wrap; overflow-x: auto; }
+  .bench-item { flex: 0 0 auto; min-width: 90px; }
   .formation-settings { grid-template-columns: 1fr; }
-  .pitch-panel { padding: 10px; }
-  .pitch { aspect-ratio: 0.75 / 1; max-height: 60vh; }
+  .teams-grid { grid-template-columns: 1fr; }
+  .team-size-buttons { grid-template-columns: repeat(3, 1fr); }
 }
   </style>
 </head>
@@ -410,38 +361,40 @@ footer { display: flex; justify-between; padding: 30px 0; margin-top: 20px; colo
       <span class="brand-icon">⚽</span>
       <span>SAHA<span class="brand-light">PLAN</span></span>
     </a>
-    <span class="live-label"><span></span> İNTERAKTİF DİZİLİM</span>
+    <span class="live-label"><span></span> DİNAMİK KADRO PLANLAYICI</span>
   </header>
 
   <main class="container">
     <section class="hero">
-      <div class="eyebrow">SÜRÜKLE &amp; BIRAK KADRO KURUCU</div>
-      <h1>Takımı Oluştur.<br><span>Sahaya Yansıt.</span></h1>
-      <p>Oyuncuları listele, takım boyutunu seç ve saha üzerinde istediğin gibi sürükle bırak.</p>
+      <div class="eyebrow">MAÇ GÜNÜ HAZIRLIĞI</div>
+      <h1>Takımını kur.<br><span>Dizilişini belirle.</span></h1>
+      <p>Oyuncuları listele, takım büyüklüğünü (5 - 10 kişi) seç ve kadroyu sürükleyip sahaya yerleştir.</p>
     </section>
 
     <section class="setup panel">
       <div class="section-heading">
         <div>
-          <span class="step">01 / KADRO &amp; MAÇ AYARI</span>
+          <span class="step">01 / KADRO</span>
           <h2>Oyuncu Listesi</h2>
         </div>
         <span class="count-badge" id="participantCount">0 oyuncu</span>
       </div>
 
-      <label for="playerInput">Oyuncu İsimleri</label>
-      <textarea id="playerInput" placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Can&#10;Emre&#10;Volkan"></textarea>
-      <p class="hint">İsimleri alt alta veya virgülle ayırarak yazabilirsiniz.</p>
+      <label for="playerInput">Katılımcı İsimleri</label>
+      <textarea id="playerInput" placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;Can&#10;Mustafa&#10;Ali&#10;&#10;İsimleri alt alta yazabilirsin."></textarea>
 
       <div class="settings">
-        <div class="setting-copy">
-          <label for="teamSize">Takım Başına Oyuncu</label>
-          <span>Örn. 7 kişilik maç için 7 seçin (Saha slotları otomatik güncellenir)</span>
+        <div>
+          <label>Takım Başına Oyuncu Sayısı</label>
+          <span style="font-size:11px; color:var(--muted)">Varsayılan olarak 7'ye 7 maç seçilidir.</span>
         </div>
-        <div class="stepper">
-          <button type="button" id="decreaseSize">−</button>
-          <input id="teamSize" type="number" min="1" max="15" value="7">
-          <button type="button" id="increaseSize">+</button>
+        <div class="team-size-buttons" id="teamSizeButtons">
+          <button type="button" class="size-btn" data-size="5">5'e 5</button>
+          <button type="button" class="size-btn" data-size="6">6'ya 6</button>
+          <button type="button" class="size-btn active" data-size="7">7'ye 7</button>
+          <button type="button" class="size-btn" data-size="8">8'e 8</button>
+          <button type="button" class="size-btn" data-size="9">9'a 9</button>
+          <button type="button" class="size-btn" data-size="10">10'a 10</button>
         </div>
       </div>
 
@@ -455,7 +408,7 @@ footer { display: flex; justify-between; padding: 30px 0; margin-top: 20px; colo
           <select id="whiteFormation"></select>
         </div>
       </div>
-      <p class="hint">💡 Diziliş alternatifleri seçtiğiniz takım oyuncu sayısına göre otomatik üretilir.</p>
+      <p class="hint">💡 Diziliş alternatifleri seçtiğiniz takım oyuncu sayısına göre otomatik üretilir (Varsayılan: 3-2-1).</p>
 
       <div class="action-row">
         <button type="button" class="btn btn-primary" id="createTeams">⚡ Takımları Oluştur</button>
@@ -476,7 +429,7 @@ footer { display: flex; justify-between; padding: 30px 0; margin-top: 20px; colo
       <section class="pitch-panel">
         <div class="pitch-top">
           <h3>⚽ Saha & Kulübe</h3>
-          <span style="font-size:11px; color:var(--muted)">Oyuncuları boş slotlara veya birbirinin üzerine sürükleyerek kolayca takas edebilirsiniz.</span>
+          <span style="font-size:11px; color:var(--muted)">Oyuncuları sürükleyip bırakarak yerleştirebilirsiniz.</span>
         </div>
 
         <div class="pitch-container">
@@ -503,14 +456,14 @@ footer { display: flex; justify-between; padding: 30px 0; margin-top: 20px; colo
       <div class="teams-grid">
         <article class="team-card">
           <div class="team-header">
-            <h3>⚫ Siyah Takım Kadrosu</h3>
+            <h3>⚫ Siyah Takım</h3>
             <span class="team-count" id="blackCount">0</span>
           </div>
           <div class="player-list" id="blackPlayersList"></div>
         </article>
         <article class="team-card">
           <div class="team-header">
-            <h3>⚪ Beyaz Takım Kadrosu</h3>
+            <h3>⚪ Beyaz Takım</h3>
             <span class="team-count" id="whiteCount">0</span>
           </div>
           <div class="player-list" id="whitePlayersList"></div>
@@ -528,28 +481,71 @@ const message = $("message");
 
 let currentTeamSize = 7;
 let teams = { black: [], white: [], bench: [] };
-let pitchAssignments = {}; // slotId -> playerName
-let draggedPlayer = null;
-let touchDragClone = null; // Mobil touch simülasyonu için görsel kopyası
-
-let teams = { black: [], white: [], bench: [] };
-let pitchAssignments = {}; // slotId -> playerName
+let pitchAssignments = {}; 
 let draggedPlayer = null;
 
-// Gelişmiş Dinamik Diziliş Üreteci
+const STORAGE_KEY = "sahaplan_state_v5";
+
+function saveState() {
+  try {
+    const data = {
+      playerInputText: playerInput.value,
+      currentTeamSize,
+      blackFormation: $("blackFormation")?.value || "3-2-1",
+      whiteFormation: $("whiteFormation")?.value || "3-2-1",
+      teams,
+      pitchAssignments,
+      hasResults: !results.hidden
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+
+    if (data.playerInputText !== undefined) playerInput.value = data.playerInputText;
+    if (data.currentTeamSize) {
+      currentTeamSize = data.currentTeamSize;
+      document.querySelectorAll(".size-btn").forEach(b => {
+        b.classList.toggle("active", parseInt(b.dataset.size, 10) === currentTeamSize);
+      });
+    }
+
+    populateFormationSelects();
+
+    if (data.blackFormation && $("blackFormation")) $("blackFormation").value = data.blackFormation;
+    if (data.whiteFormation && $("whiteFormation")) $("whiteFormation").value = data.whiteFormation;
+
+    if (data.teams) teams = data.teams;
+    if (data.pitchAssignments) pitchAssignments = data.pitchAssignments;
+
+    if (data.hasResults && (teams.black.length > 0 || teams.white.length > 0)) {
+      results.hidden = false;
+      renderAll();
+    }
+    $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 function generateFormations(teamSize) {
-  const outfield = teamSize - 1; // 1 Kaleci düşülür
+  const outfield = teamSize - 1;
   if (outfield <= 0) return ["0"];
 
-  const results = [];
-  
+  const resList = [];
   function findCombinations(rem, minVal, current) {
     if (rem === 0) {
       if (current.length >= 1 && current.length <= 4) {
         const perms = getPermutations(current);
         perms.forEach(p => {
           const str = p.join("-");
-          if (!results.includes(str)) results.push(str);
+          if (!resList.includes(str)) resList.push(str);
         });
       }
       return;
@@ -560,9 +556,7 @@ function generateFormations(teamSize) {
   }
 
   findCombinations(outfield, 1, []);
-  
-  // 3-2-1 varsa önceliğe al ve en başa koy
-  return results.sort((a,b) => {
+  return resList.sort((a,b) => {
     if (a === "3-2-1") return -1;
     if (b === "3-2-1") return 1;
     return a.length - b.length;
@@ -585,9 +579,9 @@ function getPermutations(arr) {
 
 function populateFormationSelects() {
   const options = generateFormations(currentTeamSize);
-  
   ["blackFormation", "whiteFormation"].forEach(id => {
     const sel = $(id);
+    const prevVal = sel.value;
     sel.innerHTML = "";
     options.forEach(f => {
       const opt = document.createElement("option");
@@ -595,21 +589,16 @@ function populateFormationSelects() {
       opt.textContent = `${f} Formasyonu`;
       sel.appendChild(opt);
     });
-
-    // 7 kişi seçili ise varsayılan 3-2-1 yap
-    if (currentTeamSize === 7 && options.includes("3-2-1")) {
+    if (options.includes(prevVal)) {
+      sel.value = prevVal;
+    } else if (options.includes("3-2-1")) {
       sel.value = "3-2-1";
-    } else {
-      sel.value = options[0];
     }
   });
 }
 
 function getPlayers() {
-  return playerInput.value
-    .split(/[\n,;]+/)
-    .map(name => name.trim())
-    .filter(Boolean);
+  return playerInput.value.split(/[\n,;]+/).map(n => n.trim()).filter(Boolean);
 }
 
 function createTeams() {
@@ -620,7 +609,6 @@ function createTeams() {
   }
   
   const shuffled = [...players].sort(() => Math.random() - 0.5);
-  
   teams = { black: [], white: [], bench: [] };
   pitchAssignments = {};
 
@@ -632,7 +620,8 @@ function createTeams() {
 
   results.hidden = false;
   renderAll();
-  showMessage(`${currentTeamSize}'ye ${currentTeamSize} maç için takımlar ve diziliş slotları oluşturuldu!`, "success");
+  saveState();
+  showMessage(`${currentTeamSize}'ye ${currentTeamSize} maç için takımlar oluşturuldu!`, "success");
 }
 
 function renderAll() {
@@ -648,31 +637,36 @@ function renderPitch() {
   const bForm = $("blackFormation").value || "3-2-1";
   const wForm = $("whiteFormation").value || "3-2-1";
 
-  // Siyah Takım (Üst Yarı: Y 8-44%)
   createTeamSlots(teams.black, bForm, "black", 8, [20, 32, 44]);
-  // Beyaz Takım (Alt Yarı: Y 56-92%)
   createTeamSlots(teams.white, wForm, "white", 92, [80, 68, 56]);
 }
 
 function createTeamSlots(teamPlayers, formationStr, teamKey, gkY, lineYs) {
   const lines = formationStr.split("-").map(Number);
-  
-  let playerIdx = 0;
+  const slotList = [{ id: `${teamKey}_GK`, x: 50, y: gkY, label: "GK" }];
 
-  // Kaleci Slotu
-  const gkSlotId = `${teamKey}_GK`;
-  const gkPlayer = teamPlayers[playerIdx++];
-  buildSlot(gkSlotId, 50, gkY, gkPlayer, teamKey, "GK");
-
-  // Saha Oyuncusu Slotları
   lines.forEach((count, lineIdx) => {
     const y = lineYs[lineIdx] || (teamKey === "black" ? 30 : 70);
     for (let i = 0; i < count; i++) {
       const x = count === 1 ? 50 : 15 + (i * (70 / (count - 1)));
-      const slotId = `${teamKey}_Line${lineIdx}_Slot${i}`;
-      const player = teamPlayers[playerIdx++];
-      buildSlot(slotId, x, y, player, teamKey, `P${lineIdx+1}`);
+      slotList.push({ id: `${teamKey}_Line${lineIdx}_Slot${i}`, x, y, label: `P${lineIdx+1}` });
     }
+  });
+
+  slotList.forEach((s) => {
+    let pName = pitchAssignments[s.id];
+    if (pName && !teamPlayers.includes(pName)) {
+      pName = null;
+      delete pitchAssignments[s.id];
+    }
+    if (!pName) {
+      const unassigned = teamPlayers.find(tp => !Object.values(pitchAssignments).includes(tp));
+      if (unassigned) {
+        pName = unassigned;
+        pitchAssignments[s.id] = pName;
+      }
+    }
+    buildSlot(s.id, s.x, s.y, pName, teamKey, s.label);
   });
 }
 
@@ -684,7 +678,6 @@ function buildSlot(slotId, x, y, assignedPlayer, teamKey, label) {
   slot.style.top = `${y}%`;
   slot.dataset.slotId = slotId;
 
-  // Sürükle Bırak Eventleri (Slot İçin)
   slot.addEventListener("dragover", e => { e.preventDefault(); slot.classList.add("drag-over"); });
   slot.addEventListener("dragleave", () => slot.classList.remove("drag-over"));
   slot.addEventListener("drop", e => handleDropOnSlot(e, slotId, teamKey));
@@ -696,18 +689,17 @@ function buildSlot(slotId, x, y, assignedPlayer, teamKey, label) {
   } else {
     delete pitchAssignments[slotId];
     const emptySpan = document.createElement("span");
-    emptySpan.style.fontSize = "9px";
+    emptySpan.style.fontSize = "8px";
     emptySpan.style.opacity = "0.5";
     emptySpan.textContent = label;
     slot.appendChild(emptySpan);
   }
-
   pitch.appendChild(slot);
 }
 
 function buildPlayerCard(playerName, teamKey) {
   const card = document.createElement("div");
-  card.className = `player-card ${teamKey}-player`;
+  card.className = `player-card ${teamKey}`;
   card.draggable = true;
   card.dataset.playerName = playerName;
 
@@ -722,12 +714,8 @@ function buildPlayerCard(playerName, teamKey) {
   card.appendChild(shirt);
   card.appendChild(name);
 
-  // Desktop HTML5 Drag
   card.addEventListener("dragstart", () => { draggedPlayer = playerName; });
-
-  // Mobil Touch Events
-  attachTouchEvents(card, playerName);
-
+  addTouchDragSupport(card, playerName);
   return card;
 }
 
@@ -753,8 +741,7 @@ function renderBench() {
     item.appendChild(name);
 
     item.addEventListener("dragstart", () => { draggedPlayer = player; });
-    attachTouchEvents(item, player);
-
+    addTouchDragSupport(item, player);
     list.appendChild(item);
   });
 
@@ -763,16 +750,6 @@ function renderBench() {
   sidebar.addEventListener("drop", handleDropOnBench);
 }
 
-// MOBİL TOUCH SÜRÜKLE-BIRAK DESTEĞİ
-function attachTouchEvents(element, playerName) {
-  element.addEventListener("touchstart", (e) => {
-    draggedPlayer = playerName;
-    const touch = e.touches[0];
-
-    // Ekranı takip eden geçici clone eleman
-    touchDragClone = element.cloneNode(true);
-    touchDragClone.style.position = "fixed";
-    touchDragClone.style.left = `${touch.clientX - 30}px`;
 function addTouchDragSupport(element, playerName) {
   let clone = null;
 
@@ -783,34 +760,21 @@ function addTouchDragSupport(element, playerName) {
     clone.style.position = "fixed";
     clone.style.zIndex = "9999";
     clone.style.pointerEvents = "none";
-    clone.style.opacity = "0.9";
-    clone.style.transform = "scale(1.1)";
-    clone.style.left = `${touch.clientX - 25}px`;
-    clone.style.top = `${touch.clientY - 25}px`;
+    clone.style.opacity = "0.85";
+    clone.style.left = `${touch.clientX - 20}px`;
+    clone.style.top = `${touch.clientY - 20}px`;
     document.body.appendChild(clone);
-  }, { passive: true });
+  }, {passive: true});
 
   element.addEventListener("touchmove", (e) => {
     if (!clone) return;
-    if (e.cancelable) e.preventDefault(); // Mobil sayfa kaydırmasını (scroll) engelle
+    e.preventDefault(); // Sayfa kaymasını engelle
     const touch = e.touches[0];
-    clone.style.left = `${touch.clientX - 25}px`;
-    clone.style.top = `${touch.clientY - 25}px`;
-
-    // Altındaki slot veya kulübeyi tespit edip drag-over efekti verme
-    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-    document.querySelectorAll(".pitch-slot, #benchSidebar").forEach(el => el.classList.remove("drag-over"));
-
-    if (elemBelow) {
-      const slot = elemBelow.closest(".pitch-slot");
-      const bench = elemBelow.closest("#benchSidebar");
-      if (slot) slot.classList.add("drag-over");
-      else if (bench) bench.classList.add("drag-over");
-    }
-  }, { passive: false });
+    clone.style.left = `${touch.clientX - 20}px`;
+    clone.style.top = `${touch.clientY - 20}px`;
+  }, {passive: false});
 
   element.addEventListener("touchend", (e) => {
-    document.querySelectorAll(".pitch-slot, #benchSidebar").forEach(el => el.classList.remove("drag-over"));
     if (clone) {
       clone.remove();
       clone = null;
@@ -823,9 +787,9 @@ function addTouchDragSupport(element, playerName) {
       const bench = targetElement.closest("#benchSidebar");
 
       if (slot) {
-        handleDropOnSlot({ preventDefault: () => {} }, slot.dataset.slotId, slot.classList.contains("black") ? "black" : "white");
+        handleDropOnSlot({preventDefault:()=>{}}, slot.dataset.slotId, slot.classList.contains("black") ? "black" : "white");
       } else if (bench) {
-        handleDropOnBench({ preventDefault: () => {} });
+        handleDropOnBench({preventDefault:()=>{}});
       }
     }
     draggedPlayer = null;
@@ -833,79 +797,68 @@ function addTouchDragSupport(element, playerName) {
 }
 
 function handleDropOnSlot(e, targetSlotId, targetTeamKey) {
-  if (e && e.preventDefault) e.preventDefault();
+  e.preventDefault();
   $("pitch").querySelectorAll(".pitch-slot").forEach(s => s.classList.remove("drag-over"));
   if (!draggedPlayer) return;
 
   const sourceSlotId = Object.keys(pitchAssignments).find(k => pitchAssignments[k] === draggedPlayer);
   const targetPlayer = pitchAssignments[targetSlotId];
+  const sourceTeamKey = teams.black.includes(draggedPlayer) ? "black" : (teams.white.includes(draggedPlayer) ? "white" : "bench");
 
-  // Aynı yere bırakıldıysa işlem yapma
-  if (sourceSlotId === targetSlotId) {
-    draggedPlayer = null;
-    return;
-  }
-
-  // 1. Durum: Sahadaki oyuncuyu sahadaki başka bir slota taşımak
-  if (sourceSlotId) {
-    const sourceTeamKey = sourceSlotId.startsWith("black") ? "black" : "white";
-
-    // Takım bağımlılıklarını güncelle
-    if (sourceTeamKey !== targetTeamKey) {
-      teams[sourceTeamKey] = teams[sourceTeamKey].filter(p => p !== draggedPlayer);
-      teams[targetTeamKey].push(draggedPlayer);
-      if (targetPlayer) {
-        teams[targetTeamKey] = teams[targetTeamKey].filter(p => p !== targetPlayer);
+  if (targetPlayer && targetPlayer !== draggedPlayer) {
+    if (sourceSlotId) {
+      pitchAssignments[sourceSlotId] = targetPlayer;
+      pitchAssignments[targetSlotId] = draggedPlayer;
+      if (sourceTeamKey !== targetTeamKey) {
+        removeFromTeams(draggedPlayer);
+        removeFromTeams(targetPlayer);
+        teams[targetTeamKey].push(draggedPlayer);
         teams[sourceTeamKey].push(targetPlayer);
       }
-    }
-
-    // Yerleri Takas Et (SWAP)
-    pitchAssignments[targetSlotId] = draggedPlayer;
-    if (targetPlayer) {
-      pitchAssignments[sourceSlotId] = targetPlayer;
     } else {
+      pitchAssignments[targetSlotId] = draggedPlayer;
+      removeFromTeams(draggedPlayer);
+      teams[targetTeamKey].push(draggedPlayer);
+      removeFromTeams(targetPlayer);
+      teams.bench.push(targetPlayer);
       delete pitchAssignments[sourceSlotId];
     }
-  } 
-  // 2. Durum: Yedek kulübesinden sahaya sürükleme
-  else if (teams.bench.includes(draggedPlayer)) {
-    teams.bench = teams.bench.filter(p => p !== draggedPlayer);
-    teams[targetTeamKey].push(draggedPlayer);
-
+  } else {
+    if (sourceSlotId) delete pitchAssignments[sourceSlotId];
     pitchAssignments[targetSlotId] = draggedPlayer;
-
-    if (targetPlayer) {
-      teams[targetTeamKey] = teams[targetTeamKey].filter(p => p !== targetPlayer);
-      teams.bench.push(targetPlayer);
-    }
+    removeFromTeams(draggedPlayer);
+    teams[targetTeamKey].push(draggedPlayer);
   }
 
   draggedPlayer = null;
   renderAll();
+  saveState();
 }
 
 function handleDropOnBench(e) {
-  if (e && e.preventDefault) e.preventDefault();
+  e.preventDefault();
   if (!draggedPlayer) return;
 
   const sourceSlotId = Object.keys(pitchAssignments).find(k => pitchAssignments[k] === draggedPlayer);
+  if (sourceSlotId) delete pitchAssignments[sourceSlotId];
 
-  if (sourceSlotId) {
-    const sourceTeamKey = sourceSlotId.startsWith("black") ? "black" : "white";
-    teams[sourceTeamKey] = teams[sourceTeamKey].filter(p => p !== draggedPlayer);
-    teams.bench.push(draggedPlayer);
-    delete pitchAssignments[sourceSlotId];
-  }
+  removeFromTeams(draggedPlayer);
+  teams.bench.push(draggedPlayer);
 
   draggedPlayer = null;
   renderAll();
+  saveState();
+}
+
+function removeFromTeams(player) {
+  teams.black = teams.black.filter(p => p !== player);
+  teams.white = teams.white.filter(p => p !== player);
+  teams.bench = teams.bench.filter(p => p !== player);
 }
 
 function renderLists() {
   $("blackCount").textContent = `${teams.black.length} oyuncu`;
   $("whiteCount").textContent = `${teams.white.length} oyuncu`;
-
   renderTeamList("blackPlayersList", teams.black);
   renderTeamList("whitePlayersList", teams.white);
 }
@@ -926,12 +879,11 @@ function showMessage(msg, type="") {
   message.className = `message ${type}`;
 }
 
-// Event Listeners
 playerInput.addEventListener("input", () => {
   $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+  saveState();
 });
 
-// Kişi Sayısı Buton Dinleyicileri (5, 6, 7, 8, 9, 10)
 document.querySelectorAll(".size-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
@@ -939,6 +891,7 @@ document.querySelectorAll(".size-btn").forEach(btn => {
     currentTeamSize = parseInt(btn.dataset.size, 10);
     populateFormationSelects();
     if (!results.hidden) createTeams();
+    saveState();
   });
 });
 
@@ -946,13 +899,18 @@ $("createTeams").addEventListener("click", createTeams);
 $("reshuffle").addEventListener("click", createTeams);
 $("clearAll").addEventListener("click", () => {
   playerInput.value = "";
+  teams = { black: [], white: [], bench: [] };
+  pitchAssignments = {};
   results.hidden = true;
-  showMessage("Temizlendi.");
+  localStorage.removeItem(STORAGE_KEY);
+  $("participantCount").textContent = "0 oyuncu";
+  showMessage("Tüm veriler temizlendi.");
 });
 
 ["blackFormation", "whiteFormation"].forEach(id => {
   $(id).addEventListener("change", () => {
     if (!results.hidden) renderPitch();
+    saveState();
   });
 });
 
@@ -967,8 +925,8 @@ $("downloadPitchImg").addEventListener("click", async () => {
   showMessage("Saha görseli indirildi!", "success");
 });
 
-// Başlangıç Kurulumu (Default: 7v7, 3-2-1)
 populateFormationSelects();
-</script>
+restoreState();
+  </script>
 </body>
 </html>
