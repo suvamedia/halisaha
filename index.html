@@ -979,7 +979,20 @@ $("clearAll").addEventListener("click", () => {
 $("downloadPitchImg").addEventListener("click", async () => {
   showMessage("PNG hazırlanıyor...", "success");
   const panel = document.querySelector(".pitch-panel");
-  const canvas = await html2canvas(panel, { backgroundColor: "#19221e", scale: 2 });
+  const canvas = await html2canvas(panel, {
+    backgroundColor: "#19221e",
+    scale: 2,
+    useCORS: true,
+    onclone: (clonedDoc) => {
+      const pitch = clonedDoc.querySelector("#pitch");
+  
+      if (pitch) {
+        pitch.style.backgroundColor = "#267543";
+        pitch.style.backgroundImage =
+          "repeating-linear-gradient(0deg, #267543 0%, #267543 10%, #2d804b 10%, #2d804b 20%)";
+      }
+    }
+  });
   const a = document.createElement("a");
   a.download = "halisaha-kadro.png";
   a.href = canvas.toDataURL("image/png");
