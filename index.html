@@ -356,7 +356,7 @@ footer {
 .field-control label { margin-bottom: 8px; }
 .field-control select { width: 100%; min-height: 43px; padding: 10px 12px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 9px; }
 
-.pitch-panel { margin: 18px 0 20px; padding: 18px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; }
+.pitch-panel { margin: 18px 0 20px; padding: 18px; background: #19221e; border: 1px solid var(--border); border-radius: 14px; }
 .pitch-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
 .pitch-top h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 24px; text-transform: uppercase; }
 .pitch-legend { display: flex; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 11px; }
@@ -369,8 +369,8 @@ footer {
   position: relative;
   width: 100%;
   aspect-ratio: 1.1 / 1;
-  min-height: 360px;
-  overflow: hidden;
+  min-height: 380px;
+  overflow: visible; /* Saha kenarı yedekler dışarı taşmasın diye */
   border: 2px solid #d6e8d2;
   border-radius: 8px;
   background: repeating-linear-gradient(0deg, #267543 0, #267543 10%, #2d804b 10%, #2d804b 20%);
@@ -412,6 +412,7 @@ footer {
 }
 .pitch-player.black .pitch-shirt { background: #101312; color: #fff; border-color: #b7c0b8; }
 .pitch-player.white .pitch-shirt { background: #f7f8f4; color: #171c18; border-color: #ffffff; }
+.pitch-player.bench-player .pitch-shirt { background: #c8a227; color: #171c18; border-color: #fff; }
 
 .pitch-name {
   max-width: 100%;
@@ -446,7 +447,7 @@ footer {
   footer { font-size: 8px; letter-spacing: .5px; }
   .formation-settings { grid-template-columns: 1fr; }
   .pitch-panel { padding: 12px; }
-  .pitch { min-height: 320px; aspect-ratio: 0.9 / 1; }
+  .pitch { min-height: 340px; aspect-ratio: 0.9 / 1; }
   .pitch-top { align-items: flex-start; flex-direction: column; }
   .settings { align-items: flex-start; }
   .setting-copy { max-width: 65%; }
@@ -510,6 +511,7 @@ footer {
             <option value="2-2-2">2-2-2 · Dengeli hücum</option>
             <option value="3-1-2">3-1-2 · Hücum</option>
             <option value="1-3-2">1-3-2 · Önde baskı</option>
+            <option value="2-1-3">2-1-3 · Çift Forvet / Kanat</option>
           </select>
         </div>
         <div class="field-control">
@@ -520,10 +522,11 @@ footer {
             <option value="2-2-2">2-2-2 · Dengeli hücum</option>
             <option value="3-1-2">3-1-2 · Hücum</option>
             <option value="1-3-2">1-3-2 · Önde baskı</option>
+            <option value="2-1-3">2-1-3 · Çift Forvet / Kanat</option>
           </select>
         </div>
       </div>
-      <p class="hint">Dizilişler 7 kişilik saha kadrosu (kaleci + 6 oyuncu) için optimize edilmiştir.</p>
+      <p class="hint">Dizilişler dinamiktir; seçtiğiniz takım sayısına ve formasyona göre otomatik uyarlanır.</p>
 
       <div class="action-row">
         <button type="button" class="btn btn-primary" id="createTeams">
@@ -551,6 +554,7 @@ footer {
           <div class="pitch-legend">
             <span><i class="legend-dot" style="background:#101312;border:1px solid #aeb9b0"></i>Siyah takım (Üst Yarı)</span>
             <span><i class="legend-dot" style="background:#f7f8f4;border:1px solid #aeb9b0"></i>Beyaz takım (Alt Yarı)</span>
+            <span><i class="legend-dot" style="background:#c8a227;border:1px solid #aeb9b0"></i>Yedekler (Kenar)</span>
           </div>
         </div>
 
@@ -562,9 +566,9 @@ footer {
 
         <div class="pitch-actions">
           <button type="button" class="btn btn-primary" id="downloadPitchImg">🖼️ Saha Görselini İndir (PNG)</button>
-          <button type="button" class="btn btn-secondary" id="sharePitchImg">📱 WhatsApp'a Saha Görseli Gönder</button>
+          <button type="button" class="btn btn-secondary" id="sharePitchImg">📱 WhatsApp'ta Saha Görseli Gönder</button>
         </div>
-        <p class="pitch-hint">Oyuncuların mevkilerini değiştirmek için aşağıdaki listelerden pozisyon seçebilirsiniz.</p>
+        <p class="pitch-hint">Oyuncuların mevkilerini değiştirmek için aşağıdaki listelerden dilediğiniz pozisyonu seçebilirsiniz.</p>
       </section>
 
       <div class="teams-grid">
@@ -723,7 +727,21 @@ function renderPlayerList(elementId, list, source) {
       const position = document.createElement("select");
       position.className = "player-position";
       position.setAttribute("aria-label", `${player} pozisyonu`);
-      position.innerHTML = '<option value="auto">Otomatik</option><option value="GK">Kaleci</option><option value="DEF">Defans</option><option value="MID">Orta saha</option><option value="FWD">Forvet</option>';
+      position.innerHTML = `
+        <option value="auto">Otomatik</option>
+        <option value="GK">Kaleci (GK)</option>
+        <option value="CB">Stoper (CB)</option>
+        <option value="LB">Sol Bek (LB)</option>
+        <option value="RB">Sağ Bek (RB)</option>
+        <option value="CDM">Ön Libero (CDM)</option>
+        <option value="CM">Merkez Orta (CM)</option>
+        <option value="LM">Sol Kanat (LM)</option>
+        <option value="RM">Sağ Kanat (RM)</option>
+        <option value="CAM">Ofansif Orta (CAM)</option>
+        <option value="LW">Sol Açık (LW)</option>
+        <option value="RW">Sağ Açık (RW)</option>
+        <option value="ST">Forvet / Santrafor (ST)</option>
+      `;
       position.value = playerPositions[player] || "auto";
       position.addEventListener("change", () => {
         playerPositions[player] = position.value;
@@ -807,7 +825,7 @@ function formationRows(team, key) {
 
   const isBlack = key === "black";
   const gkY = isBlack ? 9 : 91; 
-  const rowYs = isBlack ? [20, 31, 42] : [80, 69, 58];
+  const rowYs = isBlack ? [22, 36, 50] : [78, 64, 50];
 
   const rows = [{ player: keeper, role: "GK", y: gkY }];
   let remaining = players;
@@ -818,14 +836,14 @@ function formationRows(team, key) {
       rows.push({
         player,
         role: ["DEF", "MID", "FWD"][rowIndex] || "MID",
-        y: rowYs[rowIndex] || (isBlack ? 35 : 65)
+        y: rowYs[rowIndex] || (isBlack ? 36 : 64)
       });
     }
   });
 
   while (remaining.length) {
     const player = remaining.shift();
-    rows.push({ player, role: "MID", y: isBlack ? 35 : 65 });
+    rows.push({ player, role: "MID", y: isBlack ? 36 : 64 });
   }
 
   return rows;
@@ -836,6 +854,7 @@ function renderPitch() {
   if (!pitch || results.hidden) return;
   pitch.querySelectorAll(".pitch-player").forEach(node => node.remove());
 
+  // 1. Siyah ve Beyaz Takımları Sahaya Yerleştir
   ["black", "white"].forEach(key => {
     const team = teams[key];
     const rows = formationRows(team, key);
@@ -846,19 +865,36 @@ function renderPitch() {
 
       const rowPlayers = rows.filter(r => r.y === entry.y);
       const sameRowIndex = rowPlayers.findIndex(r => r.player === entry.player);
-      const x = rowPlayers.length === 1 ? 50 : 50 + (sameRowIndex - (rowPlayers.length - 1) / 2) * Math.min(22, 60 / rowPlayers.length);
+      let x = rowPlayers.length === 1 ? 50 : 50 + (sameRowIndex - (rowPlayers.length - 1) / 2) * Math.min(24, 65 / rowPlayers.length);
 
       let y = entry.y;
       const custom = playerPositions[entry.player];
-      if (custom && custom !== "auto" && custom !== "GK") {
-        y = custom === "DEF" ? (isBlack ? 20 : 80) :
-            custom === "MID" ? (isBlack ? 31 : 69) :
-            (isBlack ? 42 : 58);
+      
+      // Detaylı mevki konumlandırma override mantığı
+      if (custom && custom !== "auto") {
+        if (custom === "GK") {
+          y = isBlack ? 9 : 91;
+          x = 50;
+        } else if (["CB", "LB", "RB", "DEF"].includes(custom)) {
+          y = isBlack ? 22 : 78;
+          if (custom === "LB") x = 32;
+          if (custom === "RB") x = 68;
+        } else if (["CDM", "CM", "MID", "LM", "RM", "CAM"].includes(custom)) {
+          y = isBlack ? 36 : 64;
+          if (custom === "LM") x = 28;
+          if (custom === "RM") x = 72;
+          if (custom === "CDM") x = 43;
+          if (custom === "CAM") x = 57;
+        } else if (["LW", "RW", "ST", "FWD"].includes(custom)) {
+          y = isBlack ? 50 : 50;
+          if (custom === "LW") x = 30;
+          if (custom === "RW") x = 70;
+        }
       }
 
       const node = document.createElement("div");
       node.className = `pitch-player ${key}`;
-      node.style.left = `${Math.max(12, Math.min(88, x))}%`;
+      node.style.left = `${Math.max(10, Math.min(90, x))}%`;
       node.style.top = `${y}%`;
 
       const shirt = document.createElement("span");
@@ -874,12 +910,42 @@ function renderPitch() {
       pitch.append(node);
     });
   });
+
+  // 2. Yedek Oyuncuları Saha Kenarına (Sağ/Sol Çizgi Dışına) Yerleştir
+  if (teams.bench && teams.bench.length > 0) {
+    teams.bench.forEach((player, index) => {
+      // Sağ ve sol kenara dengeli şekilde dağıtalım
+      const isLeft = index % 2 === 0;
+      const x = isLeft ? 3 : 97; 
+      // Dikeyde eşit aralıklarla sıralansınlar
+      const step = Math.min(12, 70 / (Math.ceil(teams.bench.length / 2) + 1));
+      const y = 15 + Math.floor(index / 2) * step;
+
+      const node = document.createElement("div");
+      node.className = "pitch-player bench-player";
+      node.style.left = `${x}%`;
+      node.style.top = `${Math.min(88, y)}%`;
+
+      const shirt = document.createElement("span");
+      shirt.className = "pitch-shirt";
+      shirt.textContent = player.trim().split(/\s+/).map(s => s[0]).join("").slice(0, 2).toUpperCase();
+
+      const name = document.createElement("span");
+      name.className = "pitch-name";
+      name.textContent = `${player} (Yedek)`;
+
+      node.append(shirt, name);
+      node.title = `${player} · Yedek`;
+      pitch.append(node);
+    });
+  }
 }
 
 function movePlayer(source, index, target) {
   if (!teams[source] || !teams[target]) return;
 
-  if (teams[target].length >= getTeamSize()) {
+  // Hedef yedek kulübesi değilse ve takım kapasitesi dolduysa engelle
+  if (target !== "bench" && teams[target].length >= getTeamSize()) {
     showMessage("Bu takım dolu. Önce bir oyuncuyu başka yere taşı.", "error");
     return;
   }
@@ -979,6 +1045,7 @@ function getTeamText() {
 async function generatePitchCanvas() {
   const pitchPanel = document.querySelector(".pitch-panel");
   if (!pitchPanel) return null;
+  // Arka plan rengi kesinlikle koyu yeşil/panel tonunda sabitlenerek PNG çıktısının şeffaf/gri çıkması engellendi
   return await html2canvas(pitchPanel, {
     backgroundColor: "#19221e",
     scale: 2,
@@ -1034,7 +1101,7 @@ $("sharePitchImg").addEventListener("click", async () => {
 });
 
 $("copyTeams").addEventListener("click", async () => {
-  const text = getTeamTest();
+  const text = getTeamText();
   try {
     await navigator.clipboard.writeText(text);
     showMessage("Takım listesi kopyalandı!", "success");
@@ -1055,7 +1122,7 @@ $("shareWhatsApp").addEventListener("click", () => {
 });
 
 $("downloadTeams").addEventListener("click", () => {
-  const blob = new Blob(["\uFEFF" + getTeamText()], { type: "text/plain;charset=utf-8" });
+  const blob = new Blob(["\uFEFF" + getTeamText()], { type: "text/plain;charset=utf-8"	});
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
