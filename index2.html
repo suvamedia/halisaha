@@ -143,38 +143,43 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 
 .settings {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
+  flex-direction: column;
+  gap: 10px;
   margin-top: 20px;
   padding: 15px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
-.stepper {
+
+.team-size-buttons {
   display: flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  overflow: hidden;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.stepper button {
-  width: 36px;
-  height: 36px;
-  color: var(--green);
+
+.size-btn {
+  flex: 1;
+  min-width: 60px;
+  height: 40px;
   background: var(--panel-light);
-  border: 0;
-  font-size: 18px;
-}
-.stepper input {
-  width: 44px;
-  height: 36px;
-  color: white;
-  background: transparent;
-  border: 0;
-  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
   font-weight: 800;
-  appearance: textfield;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.size-btn:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.size-btn.active {
+  background: var(--green);
+  color: #182116;
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(200, 250, 104, 0.3);
 }
 
 .formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
@@ -324,7 +329,6 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 .player-row { min-height: 40px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ffffff09; }
 .player-number { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--panel-light); font-size: 10px; font-weight: 800; }
 .player-name { flex: 1; font-size: 12px; }
-.player-pos-select { padding: 4px 6px; background: #111915; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; font-size: 10px; }
 
 @media (max-width: 700px) {
   .pitch-container { flex-direction: column; }
@@ -348,7 +352,7 @@ textarea:focus { border-color: #8eb64e; outline: none; }
     <section class="hero">
       <div class="eyebrow">MAÇ GÜNÜ HAZIRLIĞI</div>
       <h1>Takımını kur.<br><span>Dizilişini belirle.</span></h1>
-      <p>Oyuncuları listele, istediğin sayıya göre takımları kur ve kadroyu sürükleyip sahaya yerleştir.</p>
+      <p>Oyuncuları listele, takım büyüklüğünü (5 - 10 kişi) seç ve kadroyu sürükleyip sahaya yerleştir.</p>
     </section>
 
     <section class="setup panel">
@@ -365,13 +369,16 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 
       <div class="settings">
         <div>
-          <label for="teamSize">Takım Başına Oyuncu Sayısı</label>
-          <span style="font-size:11px; color:var(--muted)">Örn. 5v5, 6v6, 7v7, 8v8 maçlar için</span>
+          <label>Takım Başına Oyuncu Sayısı</label>
+          <span style="font-size:11px; color:var(--muted)">Varsayılan olarak 7'ye 7 maç seçilidir.</span>
         </div>
-        <div class="stepper">
-          <button type="button" id="decreaseSize">−</button>
-          <input id="teamSize" type="number" min="3" max="15" value="7">
-          <button type="button" id="increaseSize">+</button>
+        <div class="team-size-buttons" id="teamSizeButtons">
+          <button type="button" class="size-btn" data-size="5">5'e 5</button>
+          <button type="button" class="size-btn" data-size="6">6'ya 6</button>
+          <button type="button" class="size-btn active" data-size="7">7'ye 7</button>
+          <button type="button" class="size-btn" data-size="8">8'e 8</button>
+          <button type="button" class="size-btn" data-size="9">9'a 9</button>
+          <button type="button" class="size-btn" data-size="10">10'a 10</button>
         </div>
       </div>
 
@@ -385,7 +392,7 @@ textarea:focus { border-color: #8eb64e; outline: none; }
           <select id="whiteFormation"></select>
         </div>
       </div>
-      <p class="hint">💡 Diziliş alternatifleri seçtiğiniz takım oyuncu sayısına göre otomatik olarak üretilir.</p>
+      <p class="hint">💡 Diziliş alternatifleri seçtiğiniz takım oyuncu sayısına göre otomatik üretilir.</p>
 
       <div class="action-row">
         <button type="button" class="btn btn-primary" id="createTeams">⚡ Takımları Oluştur</button>
@@ -453,10 +460,10 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 const $ = (id) => document.getElementById(id);
 
 const playerInput = $("playerInput");
-const teamSizeInput = $("teamSize");
 const results = $("results");
 const message = $("message");
 
+let currentTeamSize = 7; // Default 7 kişi
 let teams = { black: [], white: [], bench: [] };
 let pitchAssignments = {}; // slotId -> playerName
 let draggedPlayer = null;
@@ -471,7 +478,6 @@ function generateFormations(teamSize) {
   function findCombinations(rem, minVal, current) {
     if (rem === 0) {
       if (current.length >= 1 && current.length <= 4) {
-        // Tüm permütasyonları ekleyelim (Örn: 3-2-1, 2-3-1, 1-2-3)
         const perms = getPermutations(current);
         perms.forEach(p => {
           const str = p.join("-");
@@ -486,8 +492,6 @@ function generateFormations(teamSize) {
   }
 
   findCombinations(outfield, 1, []);
-  
-  // Halı sahaya uygun dengeli dizilişleri öne alıp sıralayalım
   return results.sort((a,b) => a.length - b.length);
 }
 
@@ -506,8 +510,7 @@ function getPermutations(arr) {
 }
 
 function populateFormationSelects() {
-  const size = getTeamSize();
-  const options = generateFormations(size);
+  const options = generateFormations(currentTeamSize);
   
   ["blackFormation", "whiteFormation"].forEach(id => {
     const sel = $(id);
@@ -516,7 +519,7 @@ function populateFormationSelects() {
     options.forEach(f => {
       const opt = document.createElement("option");
       opt.value = f;
-      opt.textContent = `${f} · Formasyonu`;
+      opt.textContent = `${f} Formasyonu`;
       sel.appendChild(opt);
     });
     if (options.includes(prevVal)) sel.value = prevVal;
@@ -530,11 +533,6 @@ function getPlayers() {
     .filter(Boolean);
 }
 
-function getTeamSize() {
-  const val = parseInt(teamSizeInput.value, 10);
-  return isNaN(val) ? 7 : Math.max(2, Math.min(20, val));
-}
-
 function createTeams() {
   const players = getPlayers();
   if (players.length < 2) {
@@ -542,21 +540,20 @@ function createTeams() {
     return;
   }
   
-  const size = getTeamSize();
   const shuffled = [...players].sort(() => Math.random() - 0.5);
   
   teams = { black: [], white: [], bench: [] };
   pitchAssignments = {};
 
   shuffled.forEach(p => {
-    if (teams.black.length < size) teams.black.push(p);
-    else if (teams.white.length < size) teams.white.push(p);
+    if (teams.black.length < currentTeamSize) teams.black.push(p);
+    else if (teams.white.length < currentTeamSize) teams.white.push(p);
     else teams.bench.push(p);
   });
 
   results.hidden = false;
   renderAll();
-  showMessage("Takımlar ve diziliş slotları başarıyla oluşturuldu!", "success");
+  showMessage(`${currentTeamSize}'ye ${currentTeamSize} maç için takımlar ve diziliş slotları oluşturuldu!`, "success");
 }
 
 function renderAll() {
@@ -763,21 +760,15 @@ playerInput.addEventListener("input", () => {
   $("participantCount").textContent = `${getPlayers().length} oyuncu`;
 });
 
-teamSizeInput.addEventListener("change", () => {
-  populateFormationSelects();
-  if (!results.hidden) createTeams();
-});
-
-$("decreaseSize").addEventListener("click", () => {
-  teamSizeInput.value = Math.max(3, getTeamSize() - 1);
-  populateFormationSelects();
-  if (!results.hidden) createTeams();
-});
-
-$("increaseSize").addEventListener("click", () => {
-  teamSizeInput.value = Math.min(20, getTeamSize() + 1);
-  populateFormationSelects();
-  if (!results.hidden) createTeams();
+// Kişi Sayısı Buton Dinleyicileri (5, 6, 7, 8, 9, 10)
+document.querySelectorAll(".size-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentTeamSize = parseInt(btn.dataset.size, 10);
+    populateFormationSelects();
+    if (!results.hidden) createTeams();
+  });
 });
 
 $("createTeams").addEventListener("click", createTeams);
@@ -805,7 +796,7 @@ $("downloadPitchImg").addEventListener("click", async () => {
   showMessage("Saha görseli indirildi!", "success");
 });
 
-// Başlangıç Kurulumu
+// Başlangıç Kurulumu (Default: 7v7)
 populateFormationSelects();
 </script>
 </body>
