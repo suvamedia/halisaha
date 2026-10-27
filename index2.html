@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#101714">
-  <meta name="description" content="Halı saha maçları için sürükle-bırak dinamik kadro ve dizilim planlayıcısı.">
-  <title>Halı Saha | Interactive Pitch & Drag Drop</title>
-  <!-- html2canvas: Saha görüntüsünü PNG yapmak için -->
+  <meta name="description" content="Halı saha maçları için esnek kadrolu, dinamik dizilişli takım ve saha planlayıcı.">
+  <title>Halı Saha | Takım Planlayıcı</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
@@ -20,7 +19,6 @@
   --text: #f2f5f1;
   --muted: #94a399;
   --red: #ff7777;
-  --gold: #ffce72;
 }
 
 * { box-sizing: border-box; }
@@ -28,9 +26,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(ellipse at 50% 0%, #24372a 0%, transparent 48%),
-    var(--bg);
+  background: radial-gradient(ellipse at 50% 0%, #24372a 0%, transparent 48%), var(--bg);
   color: var(--text);
   font-family: Inter, sans-serif;
   font-size: 14px;
@@ -38,15 +34,11 @@ body {
 
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
-button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid var(--green);
-  outline-offset: 3px;
-}
 
 .topbar {
   max-width: 1100px;
   margin: auto;
-  padding: 20px 24px;
+  padding: 24px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -81,8 +73,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   box-shadow: 0 0 10px #c8fa6880;
 }
 
-.container { max-width: 1000px; margin: auto; padding: 0 20px 40px; }
-.hero { padding: 40px 0 24px; }
+.container { max-width: 950px; margin: auto; padding: 0 24px; }
+.hero { padding: 45px 0 25px; }
 .eyebrow, .step {
   color: var(--green);
   font-size: 10px;
@@ -98,7 +90,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   text-transform: uppercase;
 }
 .hero h1 span { color: var(--green); }
-.hero p { color: var(--muted); line-height: 1.6; margin: 0; }
+.hero p { color: var(--muted); line-height: 1.7; }
 
 .panel {
   background: #19221eeF;
@@ -122,7 +114,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   text-transform: uppercase;
 }
 .count-badge, .team-count {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--green);
@@ -137,7 +129,7 @@ label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
 textarea {
   width: 100%;
   resize: vertical;
-  min-height: 120px;
+  min-height: 130px;
   padding: 14px;
   background: #111915;
   border: 1px solid var(--border);
@@ -145,279 +137,205 @@ textarea {
   color: var(--text);
   line-height: 1.7;
 }
-textarea::placeholder { color: #68786d; }
 textarea:focus { border-color: #8eb64e; outline: none; }
 
 .hint { font-size: 11px; color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
 
 .settings {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
+  flex-direction: column;
+  gap: 10px;
   margin-top: 20px;
-  padding: 16px 0;
+  padding: 15px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
-.setting-copy label { margin: 0 0 4px; }
-.setting-copy span { font-size: 11px; color: var(--muted); }
 
-.stepper {
+.team-size-buttons {
   display: flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  overflow: hidden;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.stepper button {
-  width: 38px;
-  height: 38px;
-  color: var(--green);
+
+.size-btn {
+  flex: 1;
+  min-width: 60px;
+  height: 40px;
   background: var(--panel-light);
-  border: 0;
-  font-size: 20px;
-}
-.stepper input {
-  width: 50px;
-  height: 38px;
-  color: white;
-  background: transparent;
-  border: 0;
-  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
   font-weight: 800;
+  font-size: 13px;
+  transition: all 0.2s ease;
 }
 
-.formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
-.field-control select { width: 100%; min-height: 42px; padding: 10px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 9px; }
-
-.action-row, .footer-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+.size-btn:hover {
+  border-color: var(--green);
+  color: var(--green);
 }
+
+.size-btn.active {
+  background: var(--green);
+  color: #182116;
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(200, 250, 104, 0.3);
+}
+
+.formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+.field-control select { width: 100%; min-height: 42px; padding: 8px 12px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 9px; }
+
+.action-row, .footer-actions { display: flex; gap: 10px; margin-top: 18px; }
 .btn {
-  min-height: 43px;
-  padding: 0 18px;
+  min-height: 42px;
+  padding: 0 16px;
   border-radius: 9px;
   border: 1px solid transparent;
   font-weight: 800;
   font-size: 12px;
   transition: transform .15s, background .15s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
 }
 .btn:hover { transform: translateY(-1px); }
 .btn-primary { background: var(--green); color: #182116; }
-.btn-primary:hover { background: #d9ff98; }
 .btn-secondary { background: var(--panel-light); border-color: var(--border); color: var(--text); }
-.btn-secondary:hover { background: #2a3930; }
 .action-row .btn-primary { flex: 1; }
-.message { color: var(--muted); font-size: 12px; margin: 12px 0 0; }
+.message { color: var(--muted); font-size: 12px; margin: 10px 0 0; }
 .message.error { color: var(--red); }
 .message.success { color: var(--green); }
 
-/* PITCH PANEL & DRAG-DROP AREA */
 .results { margin-top: 36px; }
-.pitch-panel {
-  margin: 18px 0 24px;
-  padding: 20px;
-  background: #19221e;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-.pitch-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-.pitch-top h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 26px; text-transform: uppercase; }
-.pitch-legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 11px; }
-.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
 
-/* DÜZENLİ YEŞİL SAHA */
-.pitch-wrapper {
-  position: relative;
-  width: 100%;
-  padding: 10px;
-  background: #141d18;
-  border-radius: 12px;
-  border: 1px solid var(--border);
+/* Saha Tasarımı */
+.pitch-panel { margin: 18px 0; padding: 20px; background: #19221e; border: 1px solid var(--border); border-radius: 14px; }
+.pitch-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.pitch-top h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 24px; text-transform: uppercase; }
+
+.pitch-container {
+  display: flex;
+  gap: 15px;
+  align-items: stretch;
 }
+
+.bench-sidebar {
+  width: 160px;
+  background: #111915;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bench-sidebar h4 { margin: 0 0 6px 0; font-size: 11px; text-transform: uppercase; color: var(--green); letter-spacing: 1px; }
+.bench-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 450px; }
 
 .pitch {
   position: relative;
-  width: 100%;
-  aspect-ratio: 0.95 / 1;
-  min-height: 480px;
+  flex: 1;
+  aspect-ratio: 1.05 / 1;
+  min-height: 440px;
   border: 2px solid #d6e8d2;
-  border-radius: 10px;
-  background: repeating-linear-gradient(0deg, #246f3f 0, #246f3f 10%, #2b7a48 10%, #2b7a48 20%);
-  overflow: hidden;
-  user-select: none;
+  border-radius: 8px;
+  background: repeating-linear-gradient(0deg, #267543 0, #267543 10%, #2d804b 10%, #2d804b 20%);
+  isolation: isolate;
 }
-.pitch-midline { position: absolute; left: 4%; right: 4%; top: 50%; border-top: 2px dashed #d7ead377; }
-.pitch-circle { position: absolute; left: 50%; top: 50%; width: 22%; aspect-ratio: 1; border: 2px solid #d7ead3aa; border-radius: 50%; transform: translate(-50%, -50%); }
-.pitch-box { position: absolute; left: 25%; width: 50%; height: 15%; border: 2px solid #d7ead3aa; }
-.pitch-box.top { top: 0; border-top: 0; }
-.pitch-box.bottom { bottom: 0; border-bottom: 0; }
-.pitch-goal { position: absolute; left: 38%; width: 24%; height: 3.5%; border: 2px solid #d7ead3; background: rgba(215, 234, 211, 0.25); }
-.pitch-goal.top { top: 0; }
-.pitch-goal.bottom { bottom: 0; }
+.pitch:before { content: ""; position: absolute; inset: 3%; border: 2px solid #d7ead3; pointer-events: none; }
+.pitch-midline { position: absolute; left: 3%; right: 3%; top: 50%; border-top: 2px solid #d7ead3; }
+.pitch-circle { position: absolute; left: 50%; top: 50%; width: 18%; aspect-ratio: 1; border: 2px solid #d7ead3; border-radius: 50%; transform: translate(-50%, -50%); }
+.pitch-box { position: absolute; left: 30%; width: 40%; height: 14%; border: 2px solid #d7ead3; }
+.pitch-box.top { top: 3%; border-top: 0; }
+.pitch-box.bottom { bottom: 3%; border-bottom: 0; }
+.pitch-goal { position: absolute; left: 40%; width: 20%; height: 3%; border: 2px solid #d7ead3; background: #d7ead322; }
+.pitch-goal.top { top: 3%; }
+.pitch-goal.bottom { bottom: 3%; }
 
-/* SAHA İÇİ SLOTLAR (DRAG TARGETS) */
+/* Saha Slotları & Oyuncular */
 .pitch-slot {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: clamp(62px, 12vw, 84px);
-  min-height: 65px;
-  border: 2px dashed rgba(255, 255, 255, 0.4);
-  border-radius: 10px;
-  background: rgba(16, 23, 20, 0.45);
+  width: clamp(52px, 8vw, 68px);
+  min-height: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 4px;
-  transition: all 0.2s ease;
+  gap: 3px;
   z-index: 2;
+  border-radius: 8px;
+  padding: 4px;
+  transition: background 0.2s, border-color 0.2s;
+  border: 1px dashed rgba(255,255,255,0.25);
 }
 .pitch-slot.drag-over {
+  background: rgba(200, 250, 104, 0.35);
   border-color: var(--green);
-  background: rgba(200, 250, 104, 0.25);
-  transform: translate(-50%, -50%) scale(1.08);
 }
-.pitch-slot.occupied {
-  border-style: solid;
-  border-color: rgba(255, 255, 255, 0.6);
-  background: rgba(16, 23, 20, 0.75);
-}
-.slot-role-label {
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--green);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 2px;
-  pointer-events: none;
-}
-.black-slot .slot-role-label { color: #8eb64e; }
-.white-slot .slot-role-label { color: #d8f5a2; }
 
-/* OYUNCU KARTI / İKONU */
 .player-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: grab;
   width: 100%;
-  z-index: 5;
+  user-select: none;
 }
 .player-card:active { cursor: grabbing; }
-.player-shirt {
+
+.pitch-shirt {
   width: 30px;
   height: 30px;
-  border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 11px;
-  font-weight: 800;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-  border: 2px solid #fff;
-  pointer-events: none;
-}
-.black-player .player-shirt { background: #101312; color: #fff; border-color: #aeb9b0; }
-.white-player .player-shirt { background: #f7f8f4; color: #171c18; border-color: #ffffff; }
-.bench-player .player-shirt { background: var(--gold); color: #171c18; border-color: #fff; }
-
-.player-card-name {
+  border-radius: 50%;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  border: 2px solid #ffffff;
+}
+.black .pitch-shirt { background: #101312; color: #fff; }
+.white .pitch-shirt { background: #f7f8f4; color: #171c18; }
+.bench-item .pitch-shirt { background: #d4a327; color: #fff; }
+
+.pitch-name {
+  max-width: 100%;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(16, 23, 20, 0.9);
   color: #fff;
-  background: rgba(10, 15, 12, 0.9);
-  padding: 2px 5px;
-  border-radius: 4px;
-  margin-top: 3px;
-  max-width: 75px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
-  pointer-events: none;
 }
 
-/* YEDEK KULÜBESİ SAHA KENARI ALANI */
-.pitch-bench-area {
-  margin-top: 14px;
-  padding: 12px;
-  background: #101714;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-}
-.pitch-bench-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--gold);
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.bench-slots-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  min-height: 58px;
-  padding: 6px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.02);
-}
-.bench-slots-container.drag-over {
-  background: rgba(200, 250, 104, 0.1);
-  border: 1px dashed var(--green);
-}
 .bench-item {
-  background: #19221e;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 10px;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 6px;
+  background: #19221e;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   cursor: grab;
 }
-.bench-item:active { cursor: grabbing; }
+.bench-item .pitch-name { background: transparent; padding: 0; }
 
-.pitch-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-
-/* KADRO LİSTELERİ */
-.teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
-.team-card { overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
-.team-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); }
-.team-identity { display: flex; align-items: center; gap: 10px; }
-.team-dot { width: 30px; height: 30px; border-radius: 8px; border: 2px solid #58645c; }
-.black-team .team-dot { background: #080a09; border-color: #657169; }
-.white-team .team-dot { background: #f6f7f4; border-color: #d3d9d2; }
-.team-identity h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 20px; text-transform: uppercase; }
-
+.teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.team-card { border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+.team-header { padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
 .player-list { padding: 10px 14px; }
-.player-row { min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #ffffff09; }
-.player-row:last-child { border-bottom: 0; }
-.player-number { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 6px; background: var(--panel-light); color: var(--muted); font-size: 10px; font-weight: 800; }
-.player-name { flex: 1; font-weight: 600; font-size: 12px; }
-.player-position-select { padding: 4px 6px; background: #111915; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; font-size: 10px; }
-.move-btn { width: 28px; height: 28px; background: #29382e; color: var(--green); border: 1px solid #35483a; border-radius: 6px; font-weight: 800; }
+.player-row { min-height: 40px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ffffff09; }
+.player-number { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--panel-light); font-size: 10px; font-weight: 800; }
+.player-name { flex: 1; font-size: 12px; }
 
-.summary-bar { margin-top: 18px; padding: 14px; border: 1px solid #34452e; border-radius: 10px; background: #1b281b; color: #cce5bd; font-size: 12px; }
-.summary-bar strong { color: var(--green); }
-
-footer { display: flex; justify-content: space-between; padding: 30px 0; margin-top: 20px; color: #69776d; font-size: 10px; letter-spacing: 1px; }
-[hidden] { display: none !important; }
-
-@media (max-width: 650px) {
-  .hero h1 { font-size: 46px; }
-  .teams-grid { grid-template-columns: 1fr; }
+@media (max-width: 700px) {
+  .pitch-container { flex-direction: column; }
+  .bench-sidebar { width: 100%; max-height: 140px; }
+  .bench-list { flex-direction: row; flex-wrap: wrap; }
   .formation-settings { grid-template-columns: 1fr; }
-  .pitch { min-height: 420px; aspect-ratio: 0.8 / 1; }
-  .pitch-slot { width: 58px; min-height: 58px; }
+  .teams-grid { grid-template-columns: 1fr; }
 }
   </style>
 </head>
@@ -427,38 +345,40 @@ footer { display: flex; justify-content: space-between; padding: 30px 0; margin-
       <span class="brand-icon">⚽</span>
       <span>SAHA<span class="brand-light">PLAN</span></span>
     </a>
-    <span class="live-label"><span></span> İNTERAKTİF DİZİLİM</span>
+    <span class="live-label"><span></span> DİNAMİK KADRO PLANLAYICI</span>
   </header>
 
   <main class="container">
     <section class="hero">
-      <div class="eyebrow">SÜRÜKLE &amp; BIRAK KADRO KURUCU</div>
-      <h1>Takımı Oluştur.<br><span>Sahaya Yansıt.</span></h1>
-      <p>Oyuncuları listele, takım boyutunu seç ve saha üzerinde istediğin gibi sürükle bırak.</p>
+      <div class="eyebrow">MAÇ GÜNÜ HAZIRLIĞI</div>
+      <h1>Takımını kur.<br><span>Dizilişini belirle.</span></h1>
+      <p>Oyuncuları listele, takım büyüklüğünü (5 - 10 kişi) seç ve kadroyu sürükleyip sahaya yerleştir.</p>
     </section>
 
     <section class="setup panel">
       <div class="section-heading">
         <div>
-          <span class="step">01 / KADRO &amp; MAÇ AYARI</span>
+          <span class="step">01 / KADRO</span>
           <h2>Oyuncu Listesi</h2>
         </div>
         <span class="count-badge" id="participantCount">0 oyuncu</span>
       </div>
 
-      <label for="playerInput">Oyuncu İsimleri</label>
-      <textarea id="playerInput" placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Can&#10;Emre&#10;Volkan"></textarea>
-      <p class="hint">İsimleri alt alta veya virgülle ayırarak yazabilirsiniz.</p>
+      <label for="playerInput">Katılımcı İsimleri</label>
+      <textarea id="playerInput" placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Emre&#10;Can&#10;Mustafa&#10;Ali&#10;&#10;İsimleri alt alta yazabilirsin."></textarea>
 
       <div class="settings">
-        <div class="setting-copy">
-          <label for="teamSize">Takım Başına Oyuncu</label>
-          <span>Örn. 7 kişilik maç için 7 seçin (Saha slotları otomatik güncellenir)</span>
+        <div>
+          <label>Takım Başına Oyuncu Sayısı</label>
+          <span style="font-size:11px; color:var(--muted)">Varsayılan olarak 7'ye 7 maç seçilidir.</span>
         </div>
-        <div class="stepper">
-          <button type="button" id="decreaseSize">−</button>
-          <input id="teamSize" type="number" min="1" max="15" value="7">
-          <button type="button" id="increaseSize">+</button>
+        <div class="team-size-buttons" id="teamSizeButtons">
+          <button type="button" class="size-btn" data-size="5">5'e 5</button>
+          <button type="button" class="size-btn" data-size="6">6'ya 6</button>
+          <button type="button" class="size-btn active" data-size="7">7'ye 7</button>
+          <button type="button" class="size-btn" data-size="8">8'e 8</button>
+          <button type="button" class="size-btn" data-size="9">9'a 9</button>
+          <button type="button" class="size-btn" data-size="10">10'a 10</button>
         </div>
       </div>
 
@@ -493,7 +413,7 @@ footer { display: flex; justify-content: space-between; padding: 30px 0; margin-
       <section class="pitch-panel">
         <div class="pitch-top">
           <h3>⚽ Saha & Kulübe</h3>
-          <span style="font-size:11px; color:var(--muted)">Oyuncuları boş slotlara veya birbirinin üzerine sürükleyerek kolayca takas edebilirsiniz.</span>
+          <span style="font-size:11px; color:var(--muted)">Oyuncuları boş slotlara sürükleyebilir veya doğrudan değiştirebilirsiniz.</span>
         </div>
 
         <div class="pitch-container">
@@ -548,12 +468,64 @@ let teams = { black: [], white: [], bench: [] };
 let pitchAssignments = {}; // slotId -> playerName
 let draggedPlayer = null;
 
+const STORAGE_KEY = "sahaplan_state_v2";
+
+// LocalStorage Kaydetme
+function saveState() {
+  try {
+    const data = {
+      playerInputText: playerInput.value,
+      currentTeamSize,
+      blackFormation: $("blackFormation")?.value || "3-2-1",
+      whiteFormation: $("whiteFormation")?.value || "3-2-1",
+      teams,
+      pitchAssignments,
+      hasResults: !results.hidden
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+// LocalStorage Geri Yükleme
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+
+    if (data.playerInputText !== undefined) playerInput.value = data.playerInputText;
+    if (data.currentTeamSize) {
+      currentTeamSize = data.currentTeamSize;
+      document.querySelectorAll(".size-btn").forEach(b => {
+        b.classList.toggle("active", parseInt(b.dataset.size, 10) === currentTeamSize);
+      });
+    }
+
+    populateFormationSelects();
+
+    if (data.blackFormation && $("blackFormation")) $("blackFormation").value = data.blackFormation;
+    if (data.whiteFormation && $("whiteFormation")) $("whiteFormation").value = data.whiteFormation;
+
+    if (data.teams) teams = data.teams;
+    if (data.pitchAssignments) pitchAssignments = data.pitchAssignments;
+
+    if (data.hasResults && (teams.black.length > 0 || teams.white.length > 0)) {
+      results.hidden = false;
+      renderAll();
+    }
+    $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 // Gelişmiş Dinamik Diziliş Üreteci
 function generateFormations(teamSize) {
   const outfield = teamSize - 1; // 1 Kaleci düşülür
   if (outfield <= 0) return ["0"];
 
-  const results = [];
+  const resList = [];
   
   function findCombinations(rem, minVal, current) {
     if (rem === 0) {
@@ -561,7 +533,7 @@ function generateFormations(teamSize) {
         const perms = getPermutations(current);
         perms.forEach(p => {
           const str = p.join("-");
-          if (!results.includes(str)) results.push(str);
+          if (!resList.includes(str)) resList.push(str);
         });
       }
       return;
@@ -573,8 +545,8 @@ function generateFormations(teamSize) {
 
   findCombinations(outfield, 1, []);
   
-  // 3-2-1 varsa önceliğe al ve en başa koy
-  return results.sort((a,b) => {
+  // 3-2-1 varsa öncelikli gelsin, sıralayalım
+  return resList.sort((a,b) => {
     if (a === "3-2-1") return -1;
     if (b === "3-2-1") return 1;
     return a.length - b.length;
@@ -600,6 +572,7 @@ function populateFormationSelects() {
   
   ["blackFormation", "whiteFormation"].forEach(id => {
     const sel = $(id);
+    const prevVal = sel.value;
     sel.innerHTML = "";
     options.forEach(f => {
       const opt = document.createElement("option");
@@ -607,12 +580,12 @@ function populateFormationSelects() {
       opt.textContent = `${f} Formasyonu`;
       sel.appendChild(opt);
     });
-
-    // 7 kişi seçili ise varsayılan 3-2-1 yap
-    if (currentTeamSize === 7 && options.includes("3-2-1")) {
+    
+    // Varsayılan 3-2-1 veya önceki değer
+    if (options.includes(prevVal)) {
+      sel.value = prevVal;
+    } else if (options.includes("3-2-1")) {
       sel.value = "3-2-1";
-    } else {
-      sel.value = options[0];
     }
   });
 }
@@ -644,6 +617,7 @@ function createTeams() {
 
   results.hidden = false;
   renderAll();
+  saveState();
   showMessage(`${currentTeamSize}'ye ${currentTeamSize} maç için takımlar ve diziliş slotları oluşturuldu!`, "success");
 }
 
@@ -660,31 +634,47 @@ function renderPitch() {
   const bForm = $("blackFormation").value || "3-2-1";
   const wForm = $("whiteFormation").value || "3-2-1";
 
-  // Siyah Takım (Üst Yarı: Y 8-44%)
+  // Siyah Takım (Üst Yarı)
   createTeamSlots(teams.black, bForm, "black", 8, [20, 32, 44]);
-  // Beyaz Takım (Alt Yarı: Y 56-92%)
+  // Beyaz Takım (Alt Yarı)
   createTeamSlots(teams.white, wForm, "white", 92, [80, 68, 56]);
 }
 
 function createTeamSlots(teamPlayers, formationStr, teamKey, gkY, lineYs) {
   const lines = formationStr.split("-").map(Number);
   
-  let playerIdx = 0;
+  // Slot şablonunu oluştur
+  const slotList = [];
+  slotList.push({ id: `${teamKey}_GK`, x: 50, y: gkY, label: "GK" });
 
-  // Kaleci Slotu
-  const gkSlotId = `${teamKey}_GK`;
-  const gkPlayer = teamPlayers[playerIdx++];
-  buildSlot(gkSlotId, 50, gkY, gkPlayer, teamKey, "GK");
-
-  // Saha Oyuncusu Slotları
   lines.forEach((count, lineIdx) => {
     const y = lineYs[lineIdx] || (teamKey === "black" ? 30 : 70);
     for (let i = 0; i < count; i++) {
       const x = count === 1 ? 50 : 15 + (i * (70 / (count - 1)));
-      const slotId = `${teamKey}_Line${lineIdx}_Slot${i}`;
-      const player = teamPlayers[playerIdx++];
-      buildSlot(slotId, x, y, player, teamKey, `P${lineIdx+1}`);
+      slotList.push({ id: `${teamKey}_Line${lineIdx}_Slot${i}`, x, y, label: `P${lineIdx+1}` });
     }
+  });
+
+  // Takım oyuncularını slotlara dağıt
+  slotList.forEach((s, idx) => {
+    let pName = pitchAssignments[s.id];
+    
+    // Eğer o slotta kayıtlı oyuncu takımdan silindiyse temizle
+    if (pName && !teamPlayers.includes(pName)) {
+      pName = null;
+      delete pitchAssignments[s.id];
+    }
+
+    // Atanmamış boş yer varsa sıradaki boştaki oyuncuyu koy
+    if (!pName) {
+      const unassigned = teamPlayers.find(tp => !Object.values(pitchAssignments).includes(tp));
+      if (unassigned) {
+        pName = unassigned;
+        pitchAssignments[s.id] = pName;
+      }
+    }
+
+    buildSlot(s.id, s.x, s.y, pName, teamKey, s.label);
   });
 }
 
@@ -696,7 +686,6 @@ function buildSlot(slotId, x, y, assignedPlayer, teamKey, label) {
   slot.style.top = `${y}%`;
   slot.dataset.slotId = slotId;
 
-  // Sürükle Bırak Eventleri (Slot İçin)
   slot.addEventListener("dragover", e => { e.preventDefault(); slot.classList.add("drag-over"); });
   slot.addEventListener("dragleave", () => slot.classList.remove("drag-over"));
   slot.addEventListener("drop", e => handleDropOnSlot(e, slotId, teamKey));
@@ -768,7 +757,7 @@ function renderBench() {
   sidebar.addEventListener("drop", handleDropOnBench);
 }
 
-// Tam Swap (Takas) Destekli Kusursuz Sürükle - Bırak Mantığı
+// Sürükle - Bırak & Takas (Swap)
 function handleDropOnSlot(e, targetSlotId, targetTeamKey) {
   e.preventDefault();
   $("pitch").querySelectorAll(".pitch-slot").forEach(s => s.classList.remove("drag-over"));
@@ -777,50 +766,41 @@ function handleDropOnSlot(e, targetSlotId, targetTeamKey) {
   const sourceSlotId = Object.keys(pitchAssignments).find(k => pitchAssignments[k] === draggedPlayer);
   const targetPlayer = pitchAssignments[targetSlotId];
 
-  // Aynı yere bırakıldıysa işlem yapma
-  if (sourceSlotId === targetSlotId) {
-    draggedPlayer = null;
-    return;
-  }
+  const sourceTeamKey = teams.black.includes(draggedPlayer) ? "black" : (teams.white.includes(draggedPlayer) ? "white" : "bench");
 
-  // 1. Durum: Sahadaki oyuncuyu sahadaki başka bir slota taşımak (Örn: Yedekten veya defanstan kaleye)
-  if (sourceSlotId) {
-    const sourceTeamKey = sourceSlotId.startsWith("black") ? "black" : "white";
-
-    // Takım bağımlılıklarını güncelle
-    if (sourceTeamKey !== targetTeamKey) {
-      teams[sourceTeamKey] = teams[sourceTeamKey].filter(p => p !== draggedPlayer);
-      teams[targetTeamKey].push(draggedPlayer);
-      if (targetPlayer) {
-        teams[targetTeamKey] = teams[targetTeamKey].filter(p => p !== targetPlayer);
+  if (targetPlayer && targetPlayer !== draggedPlayer) {
+    if (sourceSlotId) {
+      // İki saha içi oyuncusunun yerlerini takas et
+      pitchAssignments[sourceSlotId] = targetPlayer;
+      pitchAssignments[targetSlotId] = draggedPlayer;
+      
+      if (sourceTeamKey !== targetTeamKey) {
+        removeFromTeams(draggedPlayer);
+        removeFromTeams(targetPlayer);
+        teams[targetTeamKey].push(draggedPlayer);
         teams[sourceTeamKey].push(targetPlayer);
       }
-    }
-
-    // Yerleri Takas Et (SWAP)
-    pitchAssignments[targetSlotId] = draggedPlayer;
-    if (targetPlayer) {
-      pitchAssignments[sourceSlotId] = targetPlayer;
     } else {
+      // Kulübeden sahadaki birinin üzerine sürüklendiyse:
+      pitchAssignments[targetSlotId] = draggedPlayer;
+      removeFromTeams(draggedPlayer);
+      teams[targetTeamKey].push(draggedPlayer);
+
+      removeFromTeams(targetPlayer);
+      teams.bench.push(targetPlayer);
       delete pitchAssignments[sourceSlotId];
     }
-  } 
-  // 2. Durum: Yedek kulübesinden sahaya sürükleme
-  else if (teams.bench.includes(draggedPlayer)) {
-    teams.bench = teams.bench.filter(p => p !== draggedPlayer);
-    teams[targetTeamKey].push(draggedPlayer);
-
+  } else {
+    // Boş slota sürükleme
+    if (sourceSlotId) delete pitchAssignments[sourceSlotId];
     pitchAssignments[targetSlotId] = draggedPlayer;
-
-    // Hedef slotta zaten oyuncu varsa onu yedek kulübesine gönder
-    if (targetPlayer) {
-      teams[targetTeamKey] = teams[targetTeamKey].filter(p => p !== targetPlayer);
-      teams.bench.push(targetPlayer);
-    }
+    removeFromTeams(draggedPlayer);
+    teams[targetTeamKey].push(draggedPlayer);
   }
 
   draggedPlayer = null;
   renderAll();
+  saveState();
 }
 
 function handleDropOnBench(e) {
@@ -828,16 +808,20 @@ function handleDropOnBench(e) {
   if (!draggedPlayer) return;
 
   const sourceSlotId = Object.keys(pitchAssignments).find(k => pitchAssignments[k] === draggedPlayer);
+  if (sourceSlotId) delete pitchAssignments[sourceSlotId];
 
-  if (sourceSlotId) {
-    const sourceTeamKey = sourceSlotId.startsWith("black") ? "black" : "white";
-    teams[sourceTeamKey] = teams[sourceTeamKey].filter(p => p !== draggedPlayer);
-    teams.bench.push(draggedPlayer);
-    delete pitchAssignments[sourceSlotId];
-  }
+  removeFromTeams(draggedPlayer);
+  teams.bench.push(draggedPlayer);
 
   draggedPlayer = null;
   renderAll();
+  saveState();
+}
+
+function removeFromTeams(player) {
+  teams.black = teams.black.filter(p => p !== player);
+  teams.white = teams.white.filter(p => p !== player);
+  teams.bench = teams.bench.filter(p => p !== player);
 }
 
 function renderLists() {
@@ -867,9 +851,10 @@ function showMessage(msg, type="") {
 // Event Listeners
 playerInput.addEventListener("input", () => {
   $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+  saveState();
 });
 
-// Kişi Sayısı Buton Dinleyicileri (5, 6, 7, 8, 9, 10)
+// Kişi Sayısı Butonları
 document.querySelectorAll(".size-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
@@ -877,6 +862,7 @@ document.querySelectorAll(".size-btn").forEach(btn => {
     currentTeamSize = parseInt(btn.dataset.size, 10);
     populateFormationSelects();
     if (!results.hidden) createTeams();
+    saveState();
   });
 });
 
@@ -884,13 +870,18 @@ $("createTeams").addEventListener("click", createTeams);
 $("reshuffle").addEventListener("click", createTeams);
 $("clearAll").addEventListener("click", () => {
   playerInput.value = "";
+  teams = { black: [], white: [], bench: [] };
+  pitchAssignments = {};
   results.hidden = true;
-  showMessage("Temizlendi.");
+  localStorage.removeItem(STORAGE_KEY);
+  $("participantCount").textContent = "0 oyuncu";
+  showMessage("Tüm veriler temizlendi.");
 });
 
 ["blackFormation", "whiteFormation"].forEach(id => {
   $(id).addEventListener("change", () => {
     if (!results.hidden) renderPitch();
+    saveState();
   });
 });
 
@@ -905,8 +896,9 @@ $("downloadPitchImg").addEventListener("click", async () => {
   showMessage("Saha görseli indirildi!", "success");
 });
 
-// Başlangıç Kurulumu (Default: 7v7, 3-2-1)
+// Sayfa yüklendiğinde hafızadan veriyi oku
 populateFormationSelects();
+restoreState();
 </script>
 </body>
 </html>
