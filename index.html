@@ -408,16 +408,11 @@ textarea:focus { border-color: #8eb64e; outline: none; }
           <select id="whiteFormation"></select>
         </div>
       </div>
-      <p class="hint">💡 Her kişi sayısı için en ideal formasyonlar otomatik olarak varsayılan seçilir[cite: 1].</p>
+      <p class="hint">💡 Her kişi sayısı için en ideal formasyonlar otomatik olarak varsayılan seçilir.</p>
 
       <div class="action-row" style="margin-top:14px; flex-wrap:wrap;">
-        <button type="button" class="btn btn-primary" id="downloadPitchImg">
-          🖼️ Saha Görselini İndir (PNG)
-        </button>
-      
-        <button type="button" class="btn btn-secondary" id="sharePitchWhatsApp">
-          📲 WhatsApp'ta Paylaş
-        </button>
+        <button type="button" class="btn btn-primary" id="createTeams">⚽ Takımları Oluştur</button>
+        <button type="button" class="btn btn-secondary" id="clearAll">Temizle</button>
       </div>
       <p class="message" id="message"></p>
     </section>
@@ -452,8 +447,9 @@ textarea:focus { border-color: #8eb64e; outline: none; }
           </div>
         </div>
 
-        <div class="action-row" style="margin-top:14px;">
-          <button type="button" class="btn btn-primary" id="downloadPitchImg">🖼️ Saha Görselini İndir (PNG)</button>
+        <div class="action-row" style="margin-top:14px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" id="sharePitchWhatsApp">📲 WhatsApp'ta Paylaş</button>
+          <button type="button" class="btn btn-secondary" id="downloadPitchImg">🖼️ PNG İndir</button>
         </div>
       </section>
 
@@ -525,14 +521,16 @@ function restoreState() {
     if (data.blackFormation && $("blackFormation")) $("blackFormation").value = data.blackFormation;
     if (data.whiteFormation && $("whiteFormation")) $("whiteFormation").value = data.whiteFormation;
 
-    if (data.teams) teams = data.teams;
-    if (data.pitchAssignments) pitchAssignments = data.pitchAssignments;
+    if (data.teams && Array.isArray(data.teams.black) && Array.isArray(data.teams.white) && Array.isArray(data.teams.bench)) {
+      teams = data.teams;
+    }
+    if (data.pitchAssignments && typeof data.pitchAssignments === "object") pitchAssignments = data.pitchAssignments;
 
     if (data.hasResults && (teams.black.length > 0 || teams.white.length > 0)) {
       results.hidden = false;
       renderAll();
     }
-    $("participantCount").textContent = `${getPlayers().length} oyuncu[cite: 1]`;
+    $("participantCount").textContent = `${getPlayers().length} oyuncu`;
     return true;
   } catch(e) {
     return false;
@@ -924,8 +922,8 @@ function removeFromTeams(player) {
 }
 
 function renderLists() {
-  $("blackCount").textContent = `${teams.black.length} oyuncu[cite: 1]`;
-  $("whiteCount").textContent = `${teams.white.length} oyuncu[cite: 1]`;
+  $("blackCount").textContent = `${teams.black.length} oyuncu`;
+  $("whiteCount").textContent = `${teams.white.length} oyuncu`;
   renderTeamList("blackPlayersList", teams.black);
   renderTeamList("whitePlayersList", teams.white);
 }
@@ -936,7 +934,13 @@ function renderTeamList(elementId, list) {
   list.forEach((p, idx) => {
     const row = document.createElement("div");
     row.className = "player-row";
-    row.innerHTML = `<span class="player-number">${idx+1}</span><span class="player-name">${p}</span>`;
+    const number = document.createElement("span");
+    number.className = "player-number";
+    number.textContent = String(idx + 1);
+    const name = document.createElement("span");
+    name.className = "player-name";
+    name.textContent = p;
+    row.append(number, name);
     container.appendChild(row);
   });
 }
@@ -947,7 +951,7 @@ function showMessage(msg, type="") {
 }
 
 playerInput.addEventListener("input", () => {
-  $("participantCount").textContent = `${getPlayers().length} oyuncu[cite: 1]`;
+  $("participantCount").textContent = `${getPlayers().length} oyuncu`;
   saveState();
 });
 
@@ -970,7 +974,7 @@ $("clearAll").addEventListener("click", () => {
   pitchAssignments = {};
   results.hidden = true;
   localStorage.removeItem(STORAGE_KEY);
-  $("participantCount").textContent = "0 oyuncu[cite: 1]";
+  $("participantCount").textContent = "0 oyuncu";
   showMessage("Tüm veriler temizlendi.");
 });
 
@@ -986,7 +990,13 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
   const button = $("sharePitchWhatsApp");
   const panel = document.querySelector(".pitch-panel");
 
+  if (results.hidden || !panel) {
+    showMessage("Önce oyuncu listesinden takımları oluşturmalısın.", "error");
+    return;
+  }
+
   try {
+    if (typeof html2canvas !== "function") throw new Error("Görsel kütüphanesi yüklenemedi.");
     button.disabled = true;
     showMessage("Saha görseli hazırlanıyor...", "success");
 
@@ -1060,7 +1070,7 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
     if (error.name !== "AbortError") {
       console.error(error);
       showMessage(
-        "Paylaşım başarısız oldu. Görseli PNG olarak indirmeyi deneyebilirsin.",
+        "Paylaşım açılamadı. PNG İndir düğmesini kullanıp görseli WhatsApp grubuna ekleyebilirsin.",
         "error"
       );
     }
@@ -1071,27 +1081,38 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
 
 
 $("downloadPitchImg").addEventListener("click", async () => {
-  showMessage("PNG hazırlanıyor...", "success");
   const panel = document.querySelector(".pitch-panel");
-  const canvas = await html2canvas(panel, {
-    backgroundColor: "#19221e",
-    scale: 2,
-    useCORS: true,
-    onclone: (clonedDoc) => {
-      const pitch = clonedDoc.querySelector("#pitch");
-  
-      if (pitch) {
-        pitch.style.backgroundColor = "#267543";
-        pitch.style.backgroundImage =
-          "repeating-linear-gradient(0deg, #267543 0%, #267543 10%, #2d804b 10%, #2d804b 20%)";
+  if (results.hidden || !panel) {
+    showMessage("Önce takımları oluşturmalısın.", "error");
+    return;
+  }
+  try {
+    if (typeof html2canvas !== "function") throw new Error("Görsel kütüphanesi yüklenemedi.");
+    showMessage("PNG hazırlanıyor...", "success");
+    const canvas = await html2canvas(panel, {
+      backgroundColor: "#19221e",
+      scale: 2,
+      useCORS: true,
+      onclone: (clonedDoc) => {
+        const pitch = clonedDoc.querySelector("#pitch");
+        if (pitch) {
+          pitch.style.backgroundColor = "#267543";
+          pitch.style.backgroundImage =
+            "repeating-linear-gradient(0deg, #267543 0%, #267543 10%, #2d804b 10%, #2d804b 20%)";
+        }
       }
-    }
-  });
-  const a = document.createElement("a");
-  a.download = "halisaha-kadro.png";
-  a.href = canvas.toDataURL("image/png");
-  a.click();
-  showMessage("Saha görseli indirildi!", "success");
+    });
+    const a = document.createElement("a");
+    a.download = "halisaha-kadro.png";
+    a.href = canvas.toDataURL("image/png");
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showMessage("Saha görseli indirildi. WhatsApp grubuna ekleyebilirsin.", "success");
+  } catch (error) {
+    console.error(error);
+    showMessage("PNG oluşturulamadı. İnternet bağlantını kontrol edip tekrar dene.", "error");
+  }
 });
 
 populateFormationSelects();
