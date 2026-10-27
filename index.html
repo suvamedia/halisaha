@@ -768,59 +768,95 @@ function renderBench() {
   sidebar.addEventListener("drop", handleDropOnBench);
 }
 
+
 function addTouchDragSupport(element, playerName) {
   let clone = null;
-  let halfWidth = 0;
-  let halfHeight = 0;
+  let offsetX = 0;
+  let offsetY = 0;
 
   element.addEventListener("touchstart", (e) => {
-    draggedPlayer = playerName;
+    if (e.touches.length !== 1) return;
+
     const touch = e.touches[0];
+    draggedPlayer = playerName;
+
     const rect = element.getBoundingClientRect();
-    
-    // Kartın tam merkezini parmağın altına oturtmak için yarıçap hesaplanır
-    halfWidth = rect.width / 2;
-    halfHeight = rect.height / 2;
+
+    // Parmağın, kartın sol üst köşesine göre başladığı konum
+    offsetX = touch.clientX - rect.left;
+    offsetY = touch.clientY - rect.top;
 
     clone = element.cloneNode(true);
-    clone.style.position = "fixed";
-    clone.style.zIndex = "9999";
-    clone.style.pointerEvents = "none";
-    clone.style.opacity = "0.85";
-    clone.style.left = `${touch.clientX - halfWidth}px`;
-    clone.style.top = `${touch.clientY - halfHeight}px`;
+
+    Object.assign(clone.style, {
+      position: "fixed",
+      zIndex: "99999",
+      pointerEvents: "none",
+      opacity: "0.9",
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
+      margin: "0",
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      transform: "none",
+      boxSizing: "border-box"
+    });
+
     document.body.appendChild(clone);
-  }, {passive: true});
+  }, { passive: true });
 
   element.addEventListener("touchmove", (e) => {
-    if (!clone) return;
+    if (!clone || !draggedPlayer) return;
+
     e.preventDefault();
+
     const touch = e.touches[0];
-    clone.style.left = `${touch.clientX - halfWidth}px`;
-    clone.style.top = `${touch.clientY - halfHeight}px`;
-  }, {passive: false});
+
+    // Kart, parmağın ilk temas ettiği noktayı koruyarak hareket eder
+    clone.style.left = `${touch.clientX - offsetX}px`;
+    clone.style.top = `${touch.clientY - offsetY}px`;
+  }, { passive: false });
 
   element.addEventListener("touchend", (e) => {
-    if (clone) {
-      clone.remove();
-      clone = null;
-    }
+    if (!clone) return;
+
+    clone.remove();
+    clone = null;
+
     const touch = e.changedTouches[0];
-    const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
-    
+    const targetElement = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    );
+
     if (targetElement) {
       const slot = targetElement.closest(".pitch-slot");
       const bench = targetElement.closest("#benchSidebar");
 
       if (slot) {
-        handleDropOnSlot({preventDefault:()=>{}}, slot.dataset.slotId, slot.classList.contains("black") ? "black" : "white");
+        handleDropOnSlot(
+          { preventDefault: () => {} },
+          slot.dataset.slotId,
+          slot.classList.contains("black") ? "black" : "white"
+        );
       } else if (bench) {
-        handleDropOnBench({preventDefault:()=>{}});
+        handleDropOnBench({ preventDefault: () => {} });
       }
     }
+
+    draggedPlayer = null;
+  });
+
+  element.addEventListener("touchcancel", () => {
+    if (clone) {
+      clone.remove();
+      clone = null;
+    }
+
     draggedPlayer = null;
   });
 }
+
 
 function handleDropOnSlot(e, targetSlotId, targetTeamKey) {
   e.preventDefault();
