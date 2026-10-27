@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101714">
+  <meta name="description" content="Halı saha maçları için sürükle-bırak dinamik kadro ve dizilim planlayıcısı.">
+  <title>Halı Saha | Interactive Pitch & Drag Drop</title>
+  <!-- html2canvas: Saha görüntüsünü PNG yapmak için -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #101714;
+  --panel: #19221e;
+  --panel-light: #202c26;
+  --border: #2b3931;
+  --green: #c8fa68;
+  --text: #f2f5f1;
+  --muted: #94a399;
+  --red: #ff7777;
+  --gold: #ffce72;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 0%, #24372a 0%, transparent 48%),
+    var(--bg);
+  color: var(--text);
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+}
+
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+.topbar {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ffffff0e;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.brand-icon { font-size: 25px; }
+.brand-light { color: var(--green); }
+.live-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+.live-label > span {
+  width: 7px;
+  height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 10px #c8fa6880;
+}
+
+.container { max-width: 1000px; margin: auto; padding: 0 20px 40px; }
+.hero { padding: 40px 0 24px; }
+.eyebrow, .step {
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+.hero h1 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(40px, 7vw, 64px);
+  line-height: .98;
+  letter-spacing: -1px;
+  margin: 12px 0;
+  text-transform: uppercase;
+}
+.hero h1 span { color: var(--green); }
+.hero p { color: var(--muted); line-height: 1.6; margin: 0; }
+
+.panel {
+  background: #19221eeF;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 16px 45px #00000015;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.section-heading h2 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 28px;
+  margin: 4px 0 0;
+  text-transform: uppercase;
+}
+.count-badge, .team-count {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--green);
+  background: #101714;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+  padding: 14px;
+  background: #111915;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  line-height: 1.7;
+}
+textarea::placeholder { color: #68786d; }
+textarea:focus { border-color: #8eb64e; outline: none; }
+
+.hint { font-size: 11px; color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
+
+.settings {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.setting-copy label { margin: 0 0 4px; }
+.setting-copy span { font-size: 11px; color: var(--muted); }
+
+.stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+}
+.stepper button {
+  width: 38px;
+  height: 38px;
+  color: var(--green);
+  background: var(--panel-light);
+  border: 0;
+  font-size: 20px;
+}
+.stepper input {
+  width: 50px;
+  height: 38px;
+  color: white;
+  background: transparent;
+  border: 0;
+  text-align: center;
+  font-weight: 800;
+}
+
+.formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+.field-control select { width: 100%; min-height: 42px; padding: 10px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 9px; }
+
+.action-row, .footer-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.btn {
+  min-height: 43px;
+  padding: 0 18px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  font-weight: 800;
+  font-size: 12px;
+  transition: transform .15s, background .15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--green); color: #182116; }
+.btn-primary:hover { background: #d9ff98; }
+.btn-secondary { background: var(--panel-light); border-color: var(--border); color: var(--text); }
+.btn-secondary:hover { background: #2a3930; }
+.action-row .btn-primary { flex: 1; }
+.message { color: var(--muted); font-size: 12px; margin: 12px 0 0; }
+.message.error { color: var(--red); }
+.message.success { color: var(--green); }
+
+/* PITCH PANEL & DRAG-DROP AREA */
+.results { margin-top: 36px; }
+.pitch-panel {
+  margin: 18px 0 24px;
+  padding: 20px;
+  background: #19221e;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.pitch-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.pitch-top h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 26px; text-transform: uppercase; }
+.pitch-legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 11px; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+/* DÜZENLİ YEŞİL SAHA */
+.pitch-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 10px;
+  background: #141d18;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.pitch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 0.95 / 1;
+  min-height: 480px;
+  border: 2px solid #d6e8d2;
+  border-radius: 10px;
+  background: repeating-linear-gradient(0deg, #246f3f 0, #246f3f 10%, #2b7a48 10%, #2b7a48 20%);
+  overflow: hidden;
+  user-select: none;
+}
+.pitch-midline { position: absolute; left: 4%; right: 4%; top: 50%; border-top: 2px dashed #d7ead377; }
+.pitch-circle { position: absolute; left: 50%; top: 50%; width: 22%; aspect-ratio: 1; border: 2px solid #d7ead3aa; border-radius: 50%; transform: translate(-50%, -50%); }
+.pitch-box { position: absolute; left: 25%; width: 50%; height: 15%; border: 2px solid #d7ead3aa; }
+.pitch-box.top { top: 0; border-top: 0; }
+.pitch-box.bottom { bottom: 0; border-bottom: 0; }
+.pitch-goal { position: absolute; left: 38%; width: 24%; height: 3.5%; border: 2px solid #d7ead3; background: rgba(215, 234, 211, 0.25); }
+.pitch-goal.top { top: 0; }
+.pitch-goal.bottom { bottom: 0; }
+
+/* SAHA İÇİ SLOTLAR (DRAG TARGETS) */
+.pitch-slot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: clamp(62px, 12vw, 84px);
+  min-height: 65px;
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  background: rgba(16, 23, 20, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+.pitch-slot.drag-over {
+  border-color: var(--green);
+  background: rgba(200, 250, 104, 0.25);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.pitch-slot.occupied {
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(16, 23, 20, 0.75);
+}
+.slot-role-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  pointer-events: none;
+}
+.black-slot .slot-role-label { color: #8eb64e; }
+.white-slot .slot-role-label { color: #d8f5a2; }
+
+/* OYUNCU KARTI / İKONU */
+.player-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: grab;
+  width: 100%;
+  z-index: 5;
+}
+.player-card:active { cursor: grabbing; }
+.player-shirt {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  border: 2px solid #fff;
+  pointer-events: none;
+}
+.black-player .player-shirt { background: #101312; color: #fff; border-color: #aeb9b0; }
+.white-player .player-shirt { background: #f7f8f4; color: #171c18; border-color: #ffffff; }
+.bench-player .player-shirt { background: var(--gold); color: #171c18; border-color: #fff; }
+
+.player-card-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(10, 15, 12, 0.9);
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-top: 3px;
+  max-width: 75px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* YEDEK KULÜBESİ SAHA KENARI ALANI */
+.pitch-bench-area {
+  margin-top: 14px;
+  padding: 12px;
+  background: #101714;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+.pitch-bench-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bench-slots-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 58px;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+}
+.bench-slots-container.drag-over {
+  background: rgba(200, 250, 104, 0.1);
+  border: 1px dashed var(--green);
+}
+.bench-item {
+  background: #19221e;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+}
+.bench-item:active { cursor: grabbing; }
+
+.pitch-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+/* KADRO LİSTELERİ */
+.teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.team-card { overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+.team-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); }
+.team-identity { display: flex; align-items: center; gap: 10px; }
+.team-dot { width: 30px; height: 30px; border-radius: 8px; border: 2px solid #58645c; }
+.black-team .team-dot { background: #080a09; border-color: #657169; }
+.white-team .team-dot { background: #f6f7f4; border-color: #d3d9d2; }
+.team-identity h3 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-size: 20px; text-transform: uppercase; }
+
+.player-list { padding: 10px 14px; }
+.player-row { min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #ffffff09; }
+.player-row:last-child { border-bottom: 0; }
+.player-number { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 6px; background: var(--panel-light); color: var(--muted); font-size: 10px; font-weight: 800; }
+.player-name { flex: 1; font-weight: 600; font-size: 12px; }
+.player-position-select { padding: 4px 6px; background: #111915; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; font-size: 10px; }
+.move-btn { width: 28px; height: 28px; background: #29382e; color: var(--green); border: 1px solid #35483a; border-radius: 6px; font-weight: 800; }
+
+.summary-bar { margin-top: 18px; padding: 14px; border: 1px solid #34452e; border-radius: 10px; background: #1b281b; color: #cce5bd; font-size: 12px; }
+.summary-bar strong { color: var(--green); }
+
+footer { display: flex; justify-content: space-between; padding: 30px 0; margin-top: 20px; color: #69776d; font-size: 10px; letter-spacing: 1px; }
+[hidden] { display: none !important; }
+
+@media (max-width: 650px) {
+  .hero h1 { font-size: 46px; }
+  .teams-grid { grid-template-columns: 1fr; }
+  .formation-settings { grid-template-columns: 1fr; }
+  .pitch { min-height: 420px; aspect-ratio: 0.8 / 1; }
+  .pitch-slot { width: 58px; min-height: 58px; }
+}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-icon">⚽</span>
+      <span>SAHA<span class="brand-light">PLAN</span></span>
+    </a>
+    <span class="live-label"><span></span> İNTERAKTİF DİZİLİM</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="eyebrow">SÜRÜKLE &amp; BIRAK KADRO KURUCU</div>
+      <h1>Takımı Oluştur.<br><span>Sahaya Yansıt.</span></h1>
+      <p>Oyuncuları listele, takım boyutunu seç ve saha üzerinde istediğin gibi sürükle bırak.</p>
+    </section>
+
+    <section class="setup panel">
+      <div class="section-heading">
+        <div>
+          <span class="step">01 / KADRO &amp; MAÇ AYARI</span>
+          <h2>Oyuncu Listesi</h2>
+        </div>
+        <span class="count-badge" id="participantCount">0 oyuncu</span>
+      </div>
+
+      <label for="playerInput">Oyuncu İsimleri</label>
+      <textarea id="playerInput" placeholder="Ahmet&#10;Mehmet&#10;Burak&#10;Can&#10;Emre&#10;Volkan"></textarea>
+      <p class="hint">İsimleri alt alta veya virgülle ayırarak yazabilirsiniz.</p>
+
+      <div class="settings">
+        <div class="setting-copy">
+          <label for="teamSize">Takım Başına Oyuncu</label>
+          <span>Örn. 7 kişilik maç için 7 seçin (Saha slotları otomatik güncellenir)</span>
+        </div>
+        <div class="stepper">
+          <button type="button" id="decreaseSize">−</button>
+          <input id="teamSize" type="number" min="1" max="15" value="7">
+          <button type="button" id="increaseSize">+</button>
+        </div>
+      </div>
+
+      <div class="formation-settings">
+        <div class="field-control">
+          <label for="blackFormation">⚫ Siyah Takım Dizilişi</label>
+          <select id="blackFormation">
+            <option value="2-3-1">2-3-1 · Dengeli</option>
+            <option value="3-2-1">3-2-1 · Savunma</option>
+            <option value="2-2-2">2-2-2 · Hücum</option>
+            <option value="3-1-2">3-1-2 · Önde Baskı</option>
+            <option value="1-4-1">1-4-1 · Kalabalık Orta Saha</option>
+          </select>
+        </div>
+        <div class="field-control">
+          <label for="whiteFormation">⚪ Beyaz Takım Dizilişi</label>
+          <select id="whiteFormation">
+            <option value="2-3-1">2-3-1 · Dengeli</option>
+            <option value="3-2-1">3-2-1 · Savunma</option>
+            <option value="2-2-2">2-2-2 · Hücum</option>
+            <option value="3-1-2">3-1-2 · Önde Baskı</option>
+            <option value="1-4-1">1-4-1 · Kalabalık Orta Saha</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="btn btn-primary" id="createTeams">⚡ Takımları Otomatik Oluştur</button>
+        <button type="button" class="btn btn-secondary" id="clearAll">Temizle</button>
+      </div>
+      <p class="message" id="message" role="status"></p>
+    </section>
+
+    <section class="results" id="results" hidden>
+      <div class="section-heading">
+        <div>
+          <span class="step">02 / İNTERAKTİF SAHA</span>
+          <h2>Saha Yerleşimi (Sürükle &amp; Bırak)</h2>
+        </div>
+        <button type="button" class="btn btn-secondary" id="reshuffle">↻ Yeniden Karıştır</button>
+      </div>
+
+      <section class="pitch-panel" id="pitchExportArea">
+        <div class="pitch-top">
+          <h3>⚽ Saha Taktik Tahtası</h3>
+          <div class="pitch-legend">
+            <span><i class="legend-dot" style="background:#101312;border:1px solid #aeb9b0"></i>Siyah (Üst)</span>
+            <span><i class="legend-dot" style="background:#f7f8f4;border:1px solid #aeb9b0"></i>Beyaz (Alt)</span>
+            <span><i class="legend-dot" style="background:var(--gold)"></i>Yedek Kulübesi</span>
+          </div>
+        </div>
+
+        <div class="pitch-wrapper">
+          <div class="pitch" id="pitch">
+            <div class="pitch-midline"></div>
+            <div class="pitch-circle"></div>
+            <div class="pitch-box top"></div>
+            <div class="pitch-box bottom"></div>
+            <div class="pitch-goal top"></div>
+            <div class="pitch-goal bottom"></div>
+            <!-- Dinamik Saha Slotları Buraya Eklenecek -->
+          </div>
+
+          <div class="pitch-bench-area">
+            <div class="pitch-bench-title">🔄 KANAT / YEDEK KULÜBESİ (Sürükleyip Sahaya Bırakın)</div>
+            <div class="bench-slots-container" id="benchContainer" data-slot-id="bench">
+              <!-- Kenardaki Yedek Oyuncular -->
+            </div>
+          </div>
+        </div>
+
+        <div class="pitch-actions">
+          <button type="button" class="btn btn-primary" id="downloadPitchImg">🖼️ Saha Görselini İndir (PNG)</button>
+          <button type="button" class="btn btn-secondary" id="sharePitchImg">📱 WhatsApp Görsel Paylaş</button>
+        </div>
+        <p class="hint">İpucu: Bir oyuncuyu dolu bir slotun üzerine sürüklerseniz, oradaki oyuncu otomatik olarak yedek kulübesine geçer.</p>
+      </section>
+
+      <!-- TAKIM LİSTELERİ -->
+      <div class="teams-grid">
+        <article class="team-card black-team">
+          <div class="team-header">
+            <div class="team-identity">
+              <span class="team-dot"></span>
+              <div><h3>Siyah Takım</h3></div>
+            </div>
+            <span class="team-count" id="blackCount">0</span>
+          </div>
+          <div class="player-list" id="blackPlayersList"></div>
+        </article>
+
+        <article class="team-card white-team">
+          <div class="team-header">
+            <div class="team-identity">
+              <span class="team-dot"></span>
+              <div><h3>Beyaz Takım</h3></div>
+            </div>
+            <span class="team-count" id="whiteCount">0</span>
+          </div>
+          <div class="player-list" id="whitePlayersList"></div>
+        </article>
+      </div>
+
+      <div class="summary-bar" id="summaryBar"></div>
+
+      <div class="footer-actions">
+        <button type="button" class="btn btn-primary" id="shareWhatsApp">☏ Metin Olarak Paylaş</button>
+        <button type="button" class="btn btn-secondary" id="copyTeams">▣ Kadroyu Kopyala</button>
+      </div>
+    </section>
+
+    <footer>
+      <span>SAHAPLAN © 2026</span>
+      <span>İNTERAKTİF HALI SAHA MODÜLÜ</span>
+    </footer>
+  </main>
+
+  <script>
+const $ = (id) => document.getElementById(id);
+
+// Uygulama Durumu (State)
+let state = {
+  players: [],
+  teamSize: 7,
+  blackFormation: "2-3-1",
+  whiteFormation: "2-3-1",
+  blackTeam: [], // [{ name, position }]
+  whiteTeam: [],
+  bench: [],      // [name]
+  slotAssignments: {} // slotId -> playerName
+};
+
+const POSITIONS = [
+  { id: "GK", label: "Kaleci" },
+  { id: "CB", label: "Stoper" },
+  { id: "LB", label: "Sol Bek" },
+  { id: "RB", label: "Sağ Bek" },
+  { id: "CDM", label: "Ön Libero" },
+  { id: "CM", label: "Merkez Orta" },
+  { id: "LM", label: "Sol Kanat" },
+  { id: "RM", label: "Sağ Kanat" },
+  { id: "CAM", label: "Ofansif Orta" },
+  { id: "ST", label: "Forvet" }
+];
+
+function getInputValuePlayers() {
+  return $("playerInput").value
+    .split(/[\n,;]+/)
+    .map(n => n.trim())
+    .filter(Boolean);
+}
+
+function updateCount() {
+  const count = getInputValuePlayers().length;
+  $("participantCount").textContent = `${count} oyuncu`;
+}
+
+function showMessage(msg, type = "") {
+  $("message").textContent = msg;
+  $("message").className = `message ${type}`.trim();
+}
+
+function shuffle(arr) {
+  const res = [...arr];
+  for (let i = res.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [res[i], res[j]] = [res[j], res[i]];
+  }
+  return res;
+}
+
+// Takımları Oluşturma Mantığı
+function generateTeams() {
+  const allPlayers = getInputValuePlayers();
+  if (allPlayers.length < 2) {
+    showMessage("En az 2 oyuncu girmelisiniz.", "error");
+    $("results").hidden = true;
+    return;
+  }
+
+  const size = Math.max(1, parseInt($("teamSize").value, 10) || 7);
+  state.teamSize = size;
+  const shuffled = shuffle(allPlayers);
+
+  state.blackTeam = [];
+  state.whiteTeam = [];
+  state.bench = [];
+  state.slotAssignments = {};
+
+  shuffled.forEach(player => {
+    if (state.blackTeam.length < size && state.blackTeam.length <= state.whiteTeam.length) {
+      state.blackTeam.push({ name: player, pos: "auto" });
+    } else if (state.whiteTeam.length < size) {
+      state.whiteTeam.push({ name: player, pos: "auto" });
+    } else {
+      state.bench.push(player);
+    }
+  });
+
+  $("results").hidden = false;
+  renderAll();
+  showMessage("Takımlar ve interaktif saha hazır!", "success");
+}
+
+// Saha Slot Şablonu Hesaplama
+function calculateSlotPositions(teamKey, count, formationStr) {
+  const isBlack = teamKey === "black";
+  const slots = [];
+
+  // 1. Kaleci
+  slots.push({
+    id: `${teamKey}_slot_0`,
+    role: "GK",
+    x: 50,
+    y: isBlack ? 10 : 90
+  });
+
+  if (count <= 1) return slots;
+
+  const fieldCount = count - 1; // Kaleci hariç
+  const parts = formationStr.split("-").map(Number);
+  
+  // Eğer formasyon toplamı oyuncu sayısını vermiyorsa otomatik dağıt
+  let rows = [];
+  let remaining = fieldCount;
+
+  parts.forEach(p => {
+    if (remaining > 0) {
+      const take = Math.min(p, remaining);
+      rows.push(take);
+      remaining -= take;
+    }
+  });
+  while (remaining > 0) {
+    rows.push(Math.min(2, remaining));
+    remaining -= Math.min(2, remaining);
+  }
+
+  const rowYCoordinates = isBlack
+    ? [23, 35, 47, 49]
+    : [77, 65, 53, 51];
+
+  let playerIdx = 1;
+  rows.forEach((rowCount, rIndex) => {
+    const y = rowYCoordinates[rIndex] || (isBlack ? 35 : 65);
+    for (let c = 0; c < rowCount; c++) {
+      const x = rowCount === 1 ? 50 : 50 + (c - (rowCount - 1) / 2) * Math.min(26, 70 / rowCount);
+      let role = rIndex === 0 ? "DEF" : rIndex === rows.length - 1 ? "FWD" : "MID";
+      slots.push({
+        id: `${teamKey}_slot_${playerIdx}`,
+        role: role,
+        x: Math.max(12, Math.min(88, x)),
+        y: y
+      });
+      playerIdx++;
+    }
+  });
+
+  return slots;
+}
+
+// Tüm Görünümü Oluştur (Render)
+function renderAll() {
+  renderPitchSlots();
+  renderBench();
+  renderTeamLists();
+  renderSummary();
+}
+
+// SAHA SLOTLARINI VE İÇİNDEKİ OYUNCULARI ÇİZ
+function renderPitchSlots() {
+  const pitch = $("pitch");
+  pitch.querySelectorAll(".pitch-slot").forEach(el => el.remove());
+
+  const blackSlots = calculateSlotPositions("black", state.teamSize, $("blackFormation").value);
+  const whiteSlots = calculateSlotPositions("white", state.teamSize, $("whiteFormation").value);
+  const allSlots = [...blackSlots, ...whiteSlots];
+
+  allSlots.forEach(slotDef => {
+    const slotEl = document.createElement("div");
+    const isBlack = slotDef.id.startsWith("black");
+    slotEl.className = `pitch-slot ${isBlack ? "black-slot" : "white-slot"}`;
+    slotEl.style.left = `${slotDef.x}%`;
+    slotEl.style.top = `${slotDef.y}%`;
+    slotEl.dataset.slotId = slotDef.id;
+
+    const assignedPlayerName = state.slotAssignments[slotDef.id] || getInitialPlayerForSlot(slotDef);
+
+    if (assignedPlayerName) {
+      state.slotAssignments[slotDef.id] = assignedPlayerName;
+      slotEl.classList.add("occupied");
+
+      const playerCard = createPlayerCard(assignedPlayerName, isBlack ? "black" : "white", slotDef.id);
+      slotEl.appendChild(playerCard);
+    } else {
+      const label = document.createElement("span");
+      label.className = "slot-role-label";
+      label.textContent = slotDef.role;
+      slotEl.appendChild(label);
+    }
+
+    // Drag & Drop Olayları
+    setupDropZone(slotEl);
+
+    pitch.appendChild(slotEl);
+  });
+}
+
+function getInitialPlayerForSlot(slotDef) {
+  const isBlack = slotDef.id.startsWith("black");
+  const teamList = isBlack ? state.blackTeam : state.whiteTeam;
+  const index = parseInt(slotDef.id.split("_pop_")[1] || slotDef.id.split("_slot_")[1], 10);
+  return teamList[index] ? teamList[index].name : null;
+}
+
+function createPlayerCard(name, teamType, currentSlotId) {
+  const card = document.createElement("div");
+  card.className = `player-card ${teamType}-player`;
+  card.draggable = true;
+  card.dataset.playerName = name;
+  card.dataset.sourceSlot = currentSlotId;
+
+  const initials = name.trim().split(/\s+/).map(s => s[0]).join("").slice(0, 2).toUpperCase();
+
+  card.innerHTML = `
+    <div class="player-shirt">${initials}</div>
+    <div class="player-card-name">${name}</div>
+  `;
+
+  // HTML5 Drag Events
+  card.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", JSON.stringify({ name, sourceSlot: currentSlotId }));
+    card.style.opacity = "0.5";
+  });
+
+  card.addEventListener("dragend", () => {
+    card.style.opacity = "1";
+  });
+
+  return card;
+}
+
+// YEDEK KULÜBESİ ÇİZİMİ
+function renderBench() {
+  const container = $("benchContainer");
+  container.innerHTML = "";
+
+  // Sahada hiçbir slotta olmayan yedekler
+  const assignedPlayers = Object.values(state.slotAssignments);
+  const unassignedBench = state.bench.filter(p => !assignedPlayers.includes(p));
+
+  unassignedBench.forEach(playerName => {
+    const benchItem = document.createElement("div");
+    benchItem.className = "bench-item bench-player";
+    benchItem.draggable = true;
+    benchItem.dataset.playerName = playerName;
+    benchItem.dataset.sourceSlot = "bench";
+
+    const initials = playerName.trim().split(/\s+/).map(s => s[0]).join("").slice(0, 2).toUpperCase();
+
+    benchItem.innerHTML = `
+      <div class="player-shirt" style="width:24px;height:24px;font-size:9px">${initials}</div>
+      <span style="font-size:11px;font-weight:700">${playerName}</span>
+    `;
+
+    benchItem.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", JSON.stringify({ name: playerName, sourceSlot: "bench" }));
+      benchItem.style.opacity = "0.5";
+    });
+
+    benchItem.addEventListener("dragend", () => {
+      benchItem.style.opacity = "1";
+    });
+
+    container.appendChild(benchItem);
+  });
+
+  setupDropZone(container);
+}
+
+// DROP ZONE (HEDEF ALAN) MANTIĞI
+function setupDropZone(element) {
+  element.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    element.classList.add("drag-over");
+  });
+
+  element.addEventListener("dragleave", () => {
+    element.classList.remove("drag-over");
+  });
+
+  element.addEventListener("drop", (e) => {
+    e.preventDefault();
+    element.classList.remove("drag-over");
+
+    try {
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      const draggedPlayer = data.name;
+      const sourceSlot = data.sourceSlot;
+      const targetSlot = element.dataset.slotId;
+
+      if (!draggedPlayer || sourceSlot === targetSlot) return;
+
+      // 1. Hedef Alan YEDEK KULÜBESİ ise:
+      if (targetSlot === "bench") {
+        if (sourceSlot && sourceSlot !== "bench") {
+          delete state.slotAssignments[sourceSlot];
+        }
+        if (!state.bench.includes(draggedPlayer)) {
+          state.bench.push(draggedPlayer);
+        }
+      } 
+      // 2. Hedef Alan SAHA İÇİ SLOT ise:
+      else {
+        const existingPlayerInSlot = state.slotAssignments[targetSlot];
+
+        // Yer değiştirme / Deplasman mantığı
+        if (existingPlayerInSlot) {
+          if (sourceSlot && sourceSlot !== "bench") {
+            // Kaynak da bir slot ise ikisi yer değiştirsin
+            state.slotAssignments[sourceSlot] = existingPlayerInSlot;
+          } else {
+            // Kaynak yedek kulübesi ise mevcut oyuncu yedeğe çıksın
+            if (!state.bench.includes(existingPlayerInSlot)) {
+              state.bench.push(existingPlayerInSlot);
+            }
+          }
+        } else {
+          if (sourceSlot && sourceSlot !== "bench") {
+            delete state.slotAssignments[sourceSlot];
+          }
+        }
+
+        state.slotAssignments[targetSlot] = draggedPlayer;
+      }
+
+      renderAll();
+      showMessage(`${draggedPlayer} sahadaki yeni yerine taşındı!`, "success");
+    } catch (err) {
+      console.error(err);
+    }
+  });
+}
+
+// TAKIM LİSTELERİ YAZILARI
+function renderTeamLists() {
+  const renderList = (containerId, teamList) => {
+    const container = $(containerId);
+    container.innerHTML = "";
+    teamList.forEach((p, i) => {
+      const row = document.createElement("div");
+      row.className = "player-row";
+      row.innerHTML = `
+        <span class="player-number">${String(i+1).padStart(2,'0')}</span>
+        <span class="player-name">${p.name}</span>
+      `;
+      container.appendChild(row);
+    });
+  };
+
+  renderList("blackPlayersList", state.blackTeam);
+  renderList("whitePlayersList", state.whiteTeam);
+
+  $("blackCount").textContent = `${state.blackTeam.length} Oyuncu`;
+  $("whiteCount").textContent = `${state.whiteTeam.length} Oyuncu`;
+}
+
+function renderSummary() {
+  const total = state.blackTeam.length + state.whiteTeam.length + state.bench.length;
+  $("summaryBar").innerHTML = `
+    <strong>${total} Katılımcı</strong> · Siyah: <strong>${state.blackTeam.length}</strong> · Beyaz: <strong>${state.whiteTeam.length}</strong> · Yedek/Kenar: <strong>${state.bench.length}</strong>
+  `;
+}
+
+// EVENT LISTENERS
+playerInput.addEventListener("input", updateCount);
+$("decreaseSize").addEventListener("click", () => {
+  $("teamSize").value = Math.max(1, parseInt($("teamSize").value, 10) - 1);
+  if (!$("results").hidden) generateTeams();
+});
+$("increaseSize").addEventListener("click", () => {
+  $("teamSize").value = Math.min(15, parseInt($("teamSize").value, 10) + 1);
+  if (!$("results").hidden) generateTeams();
+});
+
+$("createTeams").addEventListener("click", generateTeams);
+$("reshuffle").addEventListener("click", generateTeams);
+$("blackFormation").addEventListener("change", renderPitchSlots);
+$("whiteFormation").addEventListener("change", renderPitchSlots);
+
+$("clearAll").addEventListener("click", () => {
+  playerInput.value = "";
+  $("results").hidden = true;
+  updateCount();
+  showMessage("Temizlendi.");
+});
+
+// PNG RESİM İNDİRME & PAYLAŞMA
+async function capturePitch() {
+  const area = $("pitchExportArea");
+  return await html2canvas(area, {
+    backgroundColor: "#19221e",
+    scale: 2,
+    useCORS: true
+  });
+}
+
+$("downloadPitchImg").addEventListener("click", async () => {
+  showMessage("PNG hazırlanıyor...", "success");
+  const canvas = await capturePitch();
+  if (!canvas) return;
+  const a = document.createElement("a");
+  a.download = "halisaha-taktik-sahasi.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  showMessage("Saha görseli indirildi!", "success");
+});
+
+$("sharePitchImg").addEventListener("click", async () => {
+  showMessage("Paylaşım görseli hazırlanıyor...", "success");
+  const canvas = await capturePitch();
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], "halisaha-dizilis.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ title: "Halı Saha Dizilişi", files: [file] });
+      } catch (e) {}
+    } else {
+      const a = document.createElement("a");
+      a.download = "halisaha-dizilis.png";
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+      showMessage("Görsel indirildi! WhatsApp Web'e aktarabilirsiniz.", "success");
+    }
+  });
+});
+
+$("copyTeams").addEventListener("click", () => {
+  const text = `⚽ HALI SAHA KADROLARI\n\n⚫ SİYAH TAKIM:\n${state.blackTeam.map((p,i)=>`${i+1}. ${p.name}`).join("\n")}\n\n⚪ BEYAZ TAKIM:\n${state.whiteTeam.map((p,i)=>`${i+1}. ${p.name}`).join("\n")}\n\n🔄 YEDEKLER:\n${state.bench.join("\n") || "Yok"}`;
+  navigator.clipboard.writeText(text);
+  showMessage("Kadro kopyalandı!", "success");
+});
+
+$("shareWhatsApp").addEventListener("click", () => {
+  const text = `⚽ HALI SAHA KADROLARI\n\n⚫ SİYAH TAKIM:\n${state.blackTeam.map((p,i)=>`${i+1}. ${p.name}`).join("\n")}\n\n⚪ BEYAZ TAKIM:\n${state.whiteTeam.map((p,i)=>`${i+1}. ${p.name}`).join("\n")}\n\n🔄 YEDEKLER:\n${state.bench.join("\n") || "Yok"}`;
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+});
+
+updateCount();
+  </script>
+</body>
+</html>
