@@ -837,11 +837,21 @@ function renderBench() {
 }
 
 
+
 function addTouchDragSupport(element, playerName) {
   let clone = null;
   let offsetX = 0;
   let offsetY = 0;
 
+  // Sürükleme alanlarının vurgusunu temizle
+  function clearTouchDropHighlight() {
+    document.querySelectorAll(".pitch-slot.drag-over")
+      .forEach(slot => {
+        slot.classList.remove("drag-over");
+      });
+  }
+
+  // Dokunma başladığında
   element.addEventListener("touchstart", (e) => {
     if (e.touches.length !== 1) return;
 
@@ -850,10 +860,11 @@ function addTouchDragSupport(element, playerName) {
 
     const rect = element.getBoundingClientRect();
 
-    // Parmağın, kartın sol üst köşesine göre başladığı konum
+    // Parmağın kart üzerindeki başlangıç konumunu koru
     offsetX = touch.clientX - rect.left;
     offsetY = touch.clientY - rect.top;
 
+    // Sürüklenen kartın kopyasını oluştur
     clone = element.cloneNode(true);
 
     Object.assign(clone.style, {
@@ -873,6 +884,7 @@ function addTouchDragSupport(element, playerName) {
     document.body.appendChild(clone);
   }, { passive: true });
 
+  // Parmağı hareket ettirirken
   element.addEventListener("touchmove", (e) => {
     if (!clone || !draggedPlayer) return;
 
@@ -880,50 +892,73 @@ function addTouchDragSupport(element, playerName) {
 
     const touch = e.touches[0];
 
-    // Kart, parmağın ilk temas ettiği noktayı koruyarak hareket eder
+    // Kartı parmakla birlikte hareket ettir
     clone.style.left = `${touch.clientX - offsetX}px`;
     clone.style.top = `${touch.clientY - offsetY}px`;
+
+    // Parmağın altındaki öğeyi bul
+    const target = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    );
+
+    // Önce eski alanın vurgusunu kaldır
+    clearTouchDropHighlight();
+
+    // Yeni hedef alanı vurgula
+    const slot = target?.closest(".pitch-slot");
+
+    if (slot) {
+      slot.classList.add("drag-over");
+    }
   }, { passive: false });
 
+  // Parmağı kaldırınca
   element.addEventListener("touchend", (e) => {
     if (!clone) return;
 
-    clone.remove();
-    clone = null;
-
     const touch = e.changedTouches[0];
+
+    // Bırakılan hedefi bul
     const targetElement = document.elementFromPoint(
       touch.clientX,
       touch.clientY
     );
 
-    if (targetElement) {
-      const slot = targetElement.closest(".pitch-slot");
-      const bench = targetElement.closest("#benchSidebar");
+    const slot = targetElement?.closest(".pitch-slot");
+    const bench = targetElement?.closest("#benchSidebar");
 
-      if (slot) {
-        handleDropOnSlot(
-          { preventDefault: () => {} },
-          slot.dataset.slotId,
-          slot.classList.contains("black") ? "black" : "white"
-        );
-      } else if (bench) {
-        handleDropOnBench({ preventDefault: () => {} });
-      }
+    // Kartı ve vurguyu temizle
+    clone.remove();
+    clone = null;
+    clearTouchDropHighlight();
+
+    // Oyuncuyu hedef alana bırak
+    if (slot) {
+      handleDropOnSlot(
+        { preventDefault: () => {} },
+        slot.dataset.slotId,
+        slot.classList.contains("black") ? "black" : "white"
+      );
+    } else if (bench) {
+      handleDropOnBench({ preventDefault: () => {} });
     }
 
     draggedPlayer = null;
   });
 
+  // Dokunma beklenmedik şekilde iptal edilirse
   element.addEventListener("touchcancel", () => {
     if (clone) {
       clone.remove();
       clone = null;
     }
 
+    clearTouchDropHighlight();
     draggedPlayer = null;
   });
 }
+
 
 
 function handleDropOnSlot(e, targetSlotId, targetTeamKey) {
