@@ -448,7 +448,8 @@ textarea:focus { border-color: #8eb64e; outline: none; }
         </div>
 
         <div class="action-row" style="margin-top:14px; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary" id="sharePitchWhatsApp">📲 WhatsApp'ta Paylaş</button>
+          <button type="button" class="btn btn-primary" id="shareDraft">🔗 Taslak Paylaş</button>
+          <button type="button" class="btn btn-secondary" id="sharePitchWhatsApp">📲 WhatsApp'ta Paylaş</button>
           <button type="button" class="btn btn-secondary" id="downloadPitchImg">🖼️ PNG İndir</button>
         </div>
       </section>
@@ -489,15 +490,7 @@ const STORAGE_KEY = "sahaplan_state_v8";
 
 function saveState() {
   try {
-    const data = {
-      playerInputText: playerInput.value,
-      currentTeamSize,
-      blackFormation: $("blackFormation")?.value || getDefaultFormation(currentTeamSize),
-      whiteFormation: $("whiteFormation")?.value || getDefaultFormation(currentTeamSize),
-      teams,
-      pitchAssignments,
-      hasResults: !results.hidden
-    };
+    const data = getCurrentStateData();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch(e) {}
 }
@@ -533,6 +526,78 @@ function restoreState() {
     $("participantCount").textContent = `${getPlayers().length} oyuncu`;
     return true;
   } catch(e) {
+    return false;
+  }
+}
+
+// Paylaşılan taslak URL parçasında taşınır; sunucu/veritabanı gerekmez.
+function getCurrentStateData() {
+  return {
+    playerInputText: playerInput.value,
+    currentTeamSize,
+    blackFormation: $("blackFormation")?.value || getDefaultFormation(currentTeamSize),
+    whiteFormation: $("whiteFormation")?.value || getDefaultFormation(currentTeamSize),
+    teams,
+    pitchAssignments,
+    hasResults: !results.hidden
+  };
+}
+
+function encodeDraft(data) {
+  const bytes = new TextEncoder().encode(JSON.stringify(data));
+  let binary = "";
+  bytes.forEach(byte => binary += String.fromCharCode(byte));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function decodeDraft(encoded) {
+  const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function applyStateData(data) {
+  if (!data || typeof data !== "object") return false;
+  if (data.playerInputText !== undefined) playerInput.value = data.playerInputText;
+
+  if (Number.isInteger(data.currentTeamSize) && data.currentTeamSize >= 5 && data.currentTeamSize <= 10) {
+    currentTeamSize = data.currentTeamSize;
+    document.querySelectorAll(".size-btn").forEach(b => {
+      b.classList.toggle("active", parseInt(b.dataset.size, 10) === currentTeamSize);
+    });
+  }
+
+  populateFormationSelects();
+  if (data.blackFormation && $("blackFormation")) $("blackFormation").value = data.blackFormation;
+  if (data.whiteFormation && $("whiteFormation")) $("whiteFormation").value = data.whiteFormation;
+
+  if (data.teams && Array.isArray(data.teams.black) && Array.isArray(data.teams.white) && Array.isArray(data.teams.bench)) {
+    teams = data.teams;
+  } else {
+    teams = { black: [], white: [], bench: [] };
+  }
+  pitchAssignments = data.pitchAssignments && typeof data.pitchAssignments === "object"
+    ? data.pitchAssignments : {};
+
+  results.hidden = !(data.hasResults && (teams.black.length > 0 || teams.white.length > 0));
+  if (!results.hidden) renderAll();
+  $("participantCount").textContent = `${getPlayers().length} oyuncu`;
+  return true;
+}
+
+function restoreSharedDraft() {
+  const match = location.hash.match(/(?:^#|&)taslak=([^&]+)/);
+  if (!match) return false;
+  try {
+    const data = decodeDraft(decodeURIComponent(match[1]));
+    applyStateData(data);
+    showMessage("Paylaşılan taslak açıldı. Düzenlemeler bu cihazda devam eder; orijinal bağlantı değişmez.", "success");
+    return true;
+  } catch (error) {
+    console.error("Taslak bağlantısı okunamadı:", error);
+    showMessage("Taslak bağlantısı geçersiz veya eksik.", "error");
     return false;
   }
 }
@@ -986,6 +1051,51 @@ $("clearAll").addEventListener("click", () => {
 });
 
     
+$("shareDraft").addEventListener("click", async () => {
+  if (results.hidden || (teams.black.length === 0 && teams.white.length === 0)) {
+    showMessage("Önce oyuncu listesinden takımları oluşturmalısın.", "error");
+    return;
+  }
+
+  try {
+    const data = getCurrentStateData();
+    const encoded = encodeDraft(data);
+    const url = new URL(location.href);
+    url.hash = `taslak=${encoded}`;
+    const shareUrl = url.toString();
+
+    if (shareUrl.length > 15000) {
+      showMessage("Taslak bağlantısı çok uzun oldu. Oyuncu listesini kısaltıp tekrar dene.", "error");
+      return;
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Halı Saha Kadro Taslağı",
+          text: "Kadro taslağını açıp düzenlemeye devam et ⚽",
+          url: shareUrl
+        });
+        showMessage("Taslak paylaşım menüsü açıldı.", "success");
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") return;
+      }
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(shareUrl);
+      showMessage("Taslak bağlantısı kopyalandı. WhatsApp grubuna yapıştırabilirsin.", "success");
+    } else {
+      window.prompt("Bu taslak bağlantısını kopyalayıp WhatsApp grubuna gönder:", shareUrl);
+      showMessage("Taslak bağlantısı hazır. Kopyalayıp WhatsApp grubuna gönderebilirsin.", "success");
+    }
+  } catch (error) {
+    console.error(error);
+    showMessage("Taslak bağlantısı oluşturulamadı. Sayfayı internette yayınladığından emin ol.", "error");
+  }
+});
+
 $("sharePitchWhatsApp").addEventListener("click", async () => {
   const button = $("sharePitchWhatsApp");
   const panel = document.querySelector(".pitch-panel");
@@ -1116,7 +1226,7 @@ $("downloadPitchImg").addEventListener("click", async () => {
 });
 
 populateFormationSelects();
-restoreState();
+if (!restoreSharedDraft()) restoreState();
   </script>
 </body>
 </html>
