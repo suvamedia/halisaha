@@ -670,7 +670,7 @@ function generateFormations(teamSize) {
   const resList = [];
   function findCombinations(rem, minVal, current) {
     if (rem === 0) {
-      if (current.length >= 1 && current.length <= 4) {
+      if (current.length >= 1 && current.length <= 3) {
         const perms = getPermutations(current);
         perms.forEach(p => {
           const str = p.join("-");
