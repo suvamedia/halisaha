@@ -182,7 +182,7 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 .formation-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
 .field-control select { width: 100%; min-height: 40px; padding: 6px 10px; background: #111915; color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
 
-.action-row, .footer-actions { display: flex; gap: 10px; margin-top: 16px; }
+.action-row, .footer-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 .btn {
   min-height: 40px;
   padding: 0 14px;
@@ -410,6 +410,7 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 
       <div class="action-row" style="margin-top:14px; flex-wrap:wrap;">
         <button type="button" class="btn btn-primary" id="createTeams">⚽ Takımları Oluştur</button>
+        <button type="button" class="btn btn-secondary" id="importDraftBtn">📥 Taslak Metni İçe Aktar</button>
         <button type="button" class="btn btn-secondary" id="clearAll">Temizle</button>
       </div>
       <p class="message" id="message"></p>
@@ -444,10 +445,10 @@ textarea:focus { border-color: #8eb64e; outline: none; }
         </div>
 
         <div class="action-row" style="margin-top:14px; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary" id="shareDraft">🔗 Taslak Paylaş</button>
+          <button type="button" class="btn btn-primary" id="shareDraftText">📋 Taslak Metnini Kopyala</button>
           <button type="button" class="btn btn-secondary" id="sharePitchWhatsApp">📲 WhatsApp'ta Paylaş</button>
-          <button type="button" class="btn btn-secondary" id="downloadPitchImg">🖼️ PNG İndir</button>
           <button type="button" class="btn btn-secondary" id="copyPitchImg">📋 Görseli Kopyala</button>
+          <button type="button" class="btn btn-secondary" id="downloadPitchImg">🖼️ PNG İndir</button>
         </div>
       </section>
 
@@ -482,7 +483,7 @@ let teams = { black: [], white: [], bench: [] };
 let pitchAssignments = {}; 
 let draggedPlayer = null;
 
-const STORAGE_KEY = "sahaplan_state_v8";
+const STORAGE_KEY = "sahaplan_state_v9";
 
 function saveState() {
   try {
@@ -538,19 +539,87 @@ function getCurrentStateData() {
   };
 }
 
-function encodeDraft(data) {
-  const bytes = new TextEncoder().encode(JSON.stringify(data));
-  let binary = "";
-  bytes.forEach(byte => binary += String.fromCharCode(byte));
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+// ----------------------------------------------------
+// AYRAÇLI METİN FORMATINA ÇEVİRME (DELIMITER TEXT)
+// Format: 
+// [SIZE]:7
+// [B_FORM]:3-2-1
+// [W_FORM]:3-2-1
+// [INPUT]:Ahmet,Mehmet,Burak...
+// [BLACK]:Oyuncu1|Oyuncu2...
+// [WHITE]:Oyuncu3|Oyuncu4...
+// [BENCH]:Oyuncu5...
+// [PITCH]:slotId:OyuncuAdı##slotId2:OyuncuAdı2
+// ----------------------------------------------------
+function encodeToDelimiterText(data) {
+  const inputClean = data.playerInputText.replace(/[\n\r]+/g, ",");
+  const blackStr = data.teams.black.join("|");
+  const whiteStr = data.teams.white.join("|");
+  const benchStr = data.teams.bench.join("|");
+  
+  const pitchArr = [];
+  for (const [k, v] of Object.entries(data.pitchAssignments)) {
+    pitchArr.push(`${k}:${v}`);
+  }
+  const pitchStr = pitchArr.join("##");
+
+  return [
+    `[SIZE]:${data.currentTeamSize}`,
+    `[B_FORM]:${data.blackFormation}`,
+    `[W_FORM]:${data.whiteFormation}`,
+    `[INPUT]:${inputClean}`,
+    `[BLACK]:${blackStr}`,
+    `[WHITE]:${whiteStr}`,
+    `[BENCH]:${benchStr}`,
+    `[PITCH]:${pitchStr}`
+  ].join("\n");
 }
 
-function decodeDraft(encoded) {
-  const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
-  const binary = atob(padded);
-  const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
-  return JSON.parse(new TextDecoder().decode(bytes));
+function decodeFromDelimiterText(text) {
+  const lines = text.split(/\r?\n/);
+  const map = {};
+  
+  lines.forEach(line => {
+    const idx = line.indexOf("]:");
+    if (idx !== -1) {
+      const key = line.substring(1, idx);
+      const val = line.substring(idx + 2);
+      map[key] = val;
+    }
+  });
+
+  if (!map["SIZE"] && !map["INPUT"]) {
+    throw new Error("Geçersiz format");
+  }
+
+  const currentTeamSize = parseInt(map["SIZE"], 10) || 7;
+  const blackFormation = map["B_FORM"] || getDefaultFormation(currentTeamSize);
+  const whiteFormation = map["W_FORM"] || getDefaultFormation(currentTeamSize);
+  const playerInputText = (map["INPUT"] || "").replace(/,/g, "\n");
+
+  const black = map["BLACK"] ? map["BLACK"].split("|").filter(Boolean) : [];
+  const white = map["WHITE"] ? map["WHITE"].split("|").filter(Boolean) : [];
+  const bench = map["BENCH"] ? map["BENCH"].split("|").filter(Boolean) : [];
+
+  const pitchAssignments = {};
+  if (map["PITCH"]) {
+    map["PITCH"].split("##").forEach(item => {
+      const parts = item.split(":");
+      if (parts.length === 2) {
+        pitchAssignments[parts[0]] = parts[1];
+      }
+    });
+  }
+
+  return {
+    playerInputText,
+    currentTeamSize,
+    blackFormation,
+    whiteFormation,
+    teams: { black, white, bench },
+    pitchAssignments,
+    hasResults: true
+  };
 }
 
 function applyStateData(data) {
@@ -580,21 +649,6 @@ function applyStateData(data) {
   if (!results.hidden) renderAll();
   $("participantCount").textContent = `${getPlayers().length} oyuncu`;
   return true;
-}
-
-function restoreSharedDraft() {
-  const match = location.hash.match(/(?:^#|&)taslak=([^&]+)/);
-  if (!match) return false;
-  try {
-    const data = decodeDraft(decodeURIComponent(match[1]));
-    applyStateData(data);
-    showMessage("Paylaşılan taslak açıldı. Düzenlemeler bu cihazda devam eder; orijinal bağlantı değişmez.", "success");
-    return true;
-  } catch (error) {
-    console.error("Taslak bağlantısı okunamadı:", error);
-    showMessage("Taslak bağlantısı geçersiz veya eksik.", "error");
-    return false;
-  }
 }
 
 function getDefaultFormation(size) {
@@ -681,7 +735,6 @@ function getPlayers() {
   return playerInput.value.split(/[\n,;]+/).map(n => n.trim()).filter(Boolean);
 }
 
-// Rastgele karıştırarak yeni takım oluşturan fonksiyon (Yeniden Karıştır butonu kullanır)
 function createTeams() {
   const players = getPlayers();
   if (players.length < 2) {
@@ -705,7 +758,6 @@ function createTeams() {
   showMessage(`${currentTeamSize}'ye ${currentTeamSize} maç için takımlar oluşturuldu!`, "success");
 }
 
-// Mevcut kadroyu rastgele karıştırmadan güncelleyen fonksiyon ("Takımları Oluştur" butonu kullanır)
 function refreshTeamDisplay() {
   const players = getPlayers();
   if (players.length < 2) {
@@ -1063,9 +1115,7 @@ document.querySelectorAll(".size-btn").forEach(btn => {
   });
 });
 
-// "Takımları Oluştur" butonu artık mevcut kadroyu karıştırmadan korur
 $("createTeams").addEventListener("click", refreshTeamDisplay);
-// "Yeniden Karıştır" butonu rastgele karıştırmaya devam eder
 $("reshuffle").addEventListener("click", createTeams);
 
 $("clearAll").addEventListener("click", () => {
@@ -1078,7 +1128,6 @@ $("clearAll").addEventListener("click", () => {
   showMessage("Tüm veriler temizlendi.");
 });
 
-// Formasyon değiştiğinde sahayı komple boşaltıp istenen alert mesajını gösteren yapı
 ["blackFormation", "whiteFormation"].forEach(id => {
   $(id).addEventListener("change", () => {
     pitchAssignments = {};
@@ -1087,10 +1136,12 @@ $("clearAll").addEventListener("click", () => {
       renderBench();
     }
     saveState();
+    alert("sefacim takimlari olustur butonuna tikla");
   });
 });
 
-$("shareDraft").addEventListener("click", async () => {
+// Taslak Metnini Panoya Kopyala Butonu
+$("shareDraftText").addEventListener("click", async () => {
   if (results.hidden || (teams.black.length === 0 && teams.white.length === 0)) {
     showMessage("Önce oyuncu listesinden takımları oluşturmalısın.", "error");
     return;
@@ -1098,40 +1149,34 @@ $("shareDraft").addEventListener("click", async () => {
 
   try {
     const data = getCurrentStateData();
-    const encoded = encodeDraft(data);
-    const url = new URL(location.href);
-    url.hash = `taslak=${encoded}`;
-    const shareUrl = url.toString();
-
-    if (shareUrl.length > 15000) {
-      showMessage("Taslak bağlantısı çok uzun oldu. Oyuncu listesini kısaltıp tekrar dene.", "error");
-      return;
-    }
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Halı Saha Kadro Taslağı",
-          text: "Kadro taslağını açıp düzenlemeye devam et ⚽",
-          url: shareUrl
-        });
-        showMessage("Taslak paylaşım menüsü açıldı.", "success");
-        return;
-      } catch (error) {
-        if (error.name === "AbortError") return;
-      }
-    }
+    const textData = encodeToDelimiterText(data);
 
     if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(shareUrl);
-      showMessage("Taslak bağlantısı kopyalandı. WhatsApp grubuna yapıştırabilirsin.", "success");
+      await navigator.clipboard.writeText(textData);
+      showMessage("Taslak metni kopyalandı! WhatsApp grubuna doğrudan yapıştırabilirsin.", "success");
     } else {
-      window.prompt("Bu taslak bağlantısını kopyalayıp WhatsApp grubuna gönder:", shareUrl);
-      showMessage("Taslak bağlantısı hazır. Kopyalayıp WhatsApp grubuna gönderebilirsin.", "success");
+      window.prompt("Bu taslak metnini kopyalayıp WhatsApp grubuna gönder:", textData);
+      showMessage("Taslak metni hazır.", "success");
     }
   } catch (error) {
     console.error(error);
-    showMessage("Taslak bağlantısı oluşturulamadı. Sayfayı internette yayınladığından emin ol.", "error");
+    showMessage("Taslak metni oluşturulamadı.", "error");
+  }
+});
+
+// Taslak Metnini İçe Aktar Butonu
+$("importDraftBtn").addEventListener("click", () => {
+  const input = prompt("Paylaşılan taslak metnini buraya yapıştırın:");
+  if (!input) return;
+
+  try {
+    const parsedData = decodeFromDelimiterText(input.trim());
+    applyStateData(parsedData);
+    saveState();
+    showMessage("Taslak başarıyla yüklendi!", "success");
+  } catch (err) {
+    console.error(err);
+    showMessage("Geçersiz taslak metni. Lütfen doğru metni yapıştırdığınızdan emin olun.", "error");
   }
 });
 
@@ -1155,7 +1200,6 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
       useCORS: true,
       onclone: (clonedDoc) => {
         const pitch = clonedDoc.querySelector("#pitch");
-
         if (pitch) {
           pitch.style.backgroundColor = "#267543";
           pitch.style.backgroundImage =
@@ -1164,68 +1208,41 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
       }
     });
 
-    const blob = await new Promise(resolve =>
-      canvas.toBlob(resolve, "image/png")
-    );
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    if (!blob) throw new Error("Görsel oluşturulamadı.");
 
-    if (!blob) {
-      throw new Error("Görsel oluşturulamadı.");
-    }
+    const file = new File([blob], "halisaha-kadro.png", { type: "image/png" });
 
-    const file = new File([blob], "halisaha-kadro.png", {
-      type: "image/png"
-    });
-
-    if (
-      navigator.share &&
-      navigator.canShare &&
-      navigator.canShare({ files: [file] })
-    ) {
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
         files: [file],
         title: "Halı Saha Kadrosu",
         text: "Maç kadromuz ve saha dizilişimiz ⚽"
       });
-
       showMessage("Paylaşım menüsü açıldı.", "success");
     } else {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-
       a.href = url;
       a.download = "halisaha-kadro.png";
       a.click();
-
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      const text = encodeURIComponent(
-        "Maç kadromuz ve saha dizilişimiz ⚽"
-      );
-
-      window.open(
-        `https://wa.me/?text=${text}`,
-        "_blank",
-        "noopener,noreferrer"
-      );
-
-      showMessage(
-        "Görsel indirildi. WhatsApp'ta sohbete ekleyebilirsin.",
-        "success"
-      );
+      const text = encodeURIComponent("Maç kadromuz ve saha dizilişimiz ⚽");
+      window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+      showMessage("Görsel indirildi. WhatsApp'ta sohbete ekleyebilirsin.", "success");
     }
   } catch (error) {
     if (error.name !== "AbortError") {
       console.error(error);
-      showMessage(
-        "Paylaşım açılamadı. PNG İndir düğmesini kullanıp görseli WhatsApp grubuna ekleyebilirsin.",
-        "error"
-      );
+      showMessage("Paylaşım açılamadı.", "error");
     }
   } finally {
     button.disabled = false;
   }
 });
-    $("copyPitchImg").addEventListener("click", async () => {
+
+$("copyPitchImg").addEventListener("click", async () => {
   const panel = document.querySelector(".pitch-panel");
   if (results.hidden || !panel) {
     showMessage("Önce takımları oluşturmalısın.", "error");
@@ -1257,14 +1274,13 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
     const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
     if (!blob) throw new Error("Görsel oluşturulamadı.");
 
-    // Panoya ClipboardItem olarak yaz
     const item = new ClipboardItem({ "image/png": blob });
     await navigator.clipboard.write([item]);
 
-    showMessage("Saha görseli panoya kopyalandı! İstediğiniz yere (örn. WhatsApp web) doğrudan yapıştırabilirsiniz (Ctrl+V).", "success");
+    showMessage("Saha görseli panoya kopyalandı! (Ctrl+V ile yapıştırabilirsin)", "success");
   } catch (error) {
     console.error(error);
-    showMessage("Görsel kopyalanamadı. Tarayıcı izinlerini kontrol edin.", "error");
+    showMessage("Görsel kopyalanamadı.", "error");
   }
 });
 
@@ -1296,15 +1312,15 @@ $("downloadPitchImg").addEventListener("click", async () => {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    showMessage("Saha görseli indirildi. WhatsApp grubuna ekleyebilirsin.", "success");
+    showMessage("Saha görseli indirildi.", "success");
   } catch (error) {
     console.error(error);
-    showMessage("PNG oluşturulamadı. İnternet bağlantını kontrol edip tekrar dene.", "error");
+    showMessage("PNG oluşturulamadı.", "error");
   }
 });
 
 populateFormationSelects();
-if (!restoreSharedDraft()) restoreState();
+restoreState();
   </script>
 </body>
 </html>
