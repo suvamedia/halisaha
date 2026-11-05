@@ -447,6 +447,7 @@ textarea:focus { border-color: #8eb64e; outline: none; }
           <button type="button" class="btn btn-primary" id="shareDraft">🔗 Taslak Paylaş</button>
           <button type="button" class="btn btn-secondary" id="sharePitchWhatsApp">📲 WhatsApp'ta Paylaş</button>
           <button type="button" class="btn btn-secondary" id="downloadPitchImg">🖼️ PNG İndir</button>
+          <button type="button" class="btn btn-secondary" id="copyPitchImg">📋 Görseli Kopyala</button>
         </div>
       </section>
 
@@ -1222,6 +1223,48 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
     }
   } finally {
     button.disabled = false;
+  }
+});
+    $("copyPitchImg").addEventListener("click", async () => {
+  const panel = document.querySelector(".pitch-panel");
+  if (results.hidden || !panel) {
+    showMessage("Önce takımları oluşturmalısın.", "error");
+    return;
+  }
+  
+  try {
+    if (typeof html2canvas !== "function") throw new Error("Görsel kütüphanesi yüklenemedi.");
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      throw new Error("Tarayıcınız doğrudan panoya görsel kopyalamayı desteklemiyor.");
+    }
+
+    showMessage("Görsel panoya kopyalanıyor...", "success");
+    
+    const canvas = await html2canvas(panel, {
+      backgroundColor: "#19221e",
+      scale: 2,
+      useCORS: true,
+      onclone: (clonedDoc) => {
+        const pitch = clonedDoc.querySelector("#pitch");
+        if (pitch) {
+          pitch.style.backgroundColor = "#267543";
+          pitch.style.backgroundImage =
+            "repeating-linear-gradient(0deg, #267543 0%, #267543 10%, #2d804b 10%, #2d804b 20%)";
+        }
+      }
+    });
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    if (!blob) throw new Error("Görsel oluşturulamadı.");
+
+    // Panoya ClipboardItem olarak yaz
+    const item = new ClipboardItem({ "image/png": blob });
+    await navigator.clipboard.write([item]);
+
+    showMessage("Saha görseli panoya kopyalandı! İstediğiniz yere (örn. WhatsApp web) doğrudan yapıştırabilirsiniz (Ctrl+V).", "success");
+  } catch (error) {
+    console.error(error);
+    showMessage("Görsel kopyalanamadı. Tarayıcı izinlerini kontrol edin.", "error");
   }
 });
 
