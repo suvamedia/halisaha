@@ -202,7 +202,6 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 
 .results { margin-top: 30px; }
 
-/* Saha Paneli ve Taşmayı Önleyen Fit Yapı */
 .pitch-panel {
   margin: 16px 0;
   padding: 16px;
@@ -261,7 +260,6 @@ textarea:focus { border-color: #8eb64e; outline: none; }
 .pitch-goal.top { top: 3%; }
 .pitch-goal.bottom { bottom: 3%; }
 
-/* Saha Slotları & Oyuncular */
 .pitch-slot {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -433,14 +431,12 @@ textarea:focus { border-color: #8eb64e; outline: none; }
         </div>
 
         <div class="pitch-container">
-          <!-- Saha Alanı -->
           <div class="pitch" id="pitch">
             <div class="pitch-midline"></div><div class="pitch-circle"></div>
             <div class="pitch-box top"></div><div class="pitch-box bottom"></div>
             <div class="pitch-goal top"></div><div class="pitch-goal bottom"></div>
           </div>
 
-          <!-- Yedek Kulübesi Sidebar -->
           <div class="bench-sidebar" id="benchSidebar">
             <h4>🔄 YEDEKLER</h4>
             <div class="bench-list" id="benchList"></div>
@@ -454,7 +450,6 @@ textarea:focus { border-color: #8eb64e; outline: none; }
         </div>
       </section>
 
-      <!-- Oyuncu Pozisyon Listeleri -->
       <div class="teams-grid">
         <article class="team-card">
           <div class="team-header">
@@ -530,7 +525,6 @@ function restoreState() {
   }
 }
 
-// Paylaşılan taslak URL parçasında taşınır; sunucu/veritabanı gerekmez.
 function getCurrentStateData() {
   return {
     playerInputText: playerInput.value,
@@ -662,16 +656,23 @@ function getPermutations(arr) {
 function populateFormationSelects() {
   const options = generateFormations(currentTeamSize);
   const defVal = getDefaultFormation(currentTeamSize);
+
   ["blackFormation", "whiteFormation"].forEach(id => {
-    $(id).addEventListener("change", () => {
-      pitchAssignments = {};
-      if (!results.hidden) {
-        renderPitch();
-        renderBench();
-      }
-      saveState();
-      alert("sefacim takimlari olustur butonuna tikla");
+    const sel = $(id);
+    const prevVal = sel.value;
+    sel.innerHTML = "";
+    options.forEach(f => {
+      const opt = document.createElement("option");
+      opt.value = f;
+      opt.textContent = `${f} Formasyonu`;
+      sel.appendChild(opt);
     });
+    
+    if (options.includes(prevVal)) {
+      sel.value = prevVal;
+    } else if (options.includes(defVal)) {
+      sel.value = defVal;
+    }
   });
 }
 
@@ -679,6 +680,7 @@ function getPlayers() {
   return playerInput.value.split(/[\n,;]+/).map(n => n.trim()).filter(Boolean);
 }
 
+// Rastgele karıştırarak yeni takım oluşturan fonksiyon (Yeniden Karıştır butonu kullanır)
 function createTeams() {
   const players = getPlayers();
   if (players.length < 2) {
@@ -700,6 +702,25 @@ function createTeams() {
   renderAll();
   saveState();
   showMessage(`${currentTeamSize}'ye ${currentTeamSize} maç için takımlar oluşturuldu!`, "success");
+}
+
+// Mevcut kadroyu rastgele karıştırmadan güncelleyen fonksiyon ("Takımları Oluştur" butonu kullanır)
+function refreshTeamDisplay() {
+  const players = getPlayers();
+  if (players.length < 2) {
+    showMessage("En az 2 oyuncu girmelisiniz.", "error");
+    return;
+  }
+  
+  if (teams.black.length === 0 && teams.white.length === 0) {
+    createTeams();
+    return;
+  }
+
+  results.hidden = false;
+  renderAll();
+  saveState();
+  showMessage("Mevcut kadro korundu.", "success");
 }
 
 function renderAll() {
@@ -829,14 +850,11 @@ function renderBench() {
   sidebar.addEventListener("drop", handleDropOnBench);
 }
 
-
-
 function addTouchDragSupport(element, playerName) {
   let clone = null;
   let offsetX = 0;
   let offsetY = 0;
 
-  // Sürükleme alanlarının vurgusunu temizle
   function clearTouchDropHighlight() {
     document.querySelectorAll(".pitch-slot.drag-over")
       .forEach(slot => {
@@ -844,7 +862,6 @@ function addTouchDragSupport(element, playerName) {
       });
   }
 
-  // Dokunma başladığında
   element.addEventListener("touchstart", (e) => {
     if (e.touches.length !== 1) return;
 
@@ -853,11 +870,9 @@ function addTouchDragSupport(element, playerName) {
 
     const rect = element.getBoundingClientRect();
 
-    // Parmağın kart üzerindeki başlangıç konumunu koru
     offsetX = touch.clientX - rect.left;
     offsetY = touch.clientY - rect.top;
 
-    // Sürüklenen kartın kopyasını oluştur
     clone = element.cloneNode(true);
 
     Object.assign(clone.style, {
@@ -877,7 +892,6 @@ function addTouchDragSupport(element, playerName) {
     document.body.appendChild(clone);
   }, { passive: true });
 
-  // Parmağı hareket ettirirken
   element.addEventListener("touchmove", (e) => {
     if (!clone || !draggedPlayer) return;
 
@@ -885,20 +899,16 @@ function addTouchDragSupport(element, playerName) {
 
     const touch = e.touches[0];
 
-    // Kartı parmakla birlikte hareket ettir
     clone.style.left = `${touch.clientX - offsetX}px`;
     clone.style.top = `${touch.clientY - offsetY}px`;
 
-    // Parmağın altındaki öğeyi bul
     const target = document.elementFromPoint(
       touch.clientX,
       touch.clientY
     );
 
-    // Önce eski alanın vurgusunu kaldır
     clearTouchDropHighlight();
 
-    // Yeni hedef alanı vurgula
     const slot = target?.closest(".pitch-slot");
 
     if (slot) {
@@ -906,13 +916,11 @@ function addTouchDragSupport(element, playerName) {
     }
   }, { passive: false });
 
-  // Parmağı kaldırınca
   element.addEventListener("touchend", (e) => {
     if (!clone) return;
 
     const touch = e.changedTouches[0];
 
-    // Bırakılan hedefi bul
     const targetElement = document.elementFromPoint(
       touch.clientX,
       touch.clientY
@@ -921,12 +929,10 @@ function addTouchDragSupport(element, playerName) {
     const slot = targetElement?.closest(".pitch-slot");
     const bench = targetElement?.closest("#benchSidebar");
 
-    // Kartı ve vurguyu temizle
     clone.remove();
     clone = null;
     clearTouchDropHighlight();
 
-    // Oyuncuyu hedef alana bırak
     if (slot) {
       handleDropOnSlot(
         { preventDefault: () => {} },
@@ -940,7 +946,6 @@ function addTouchDragSupport(element, playerName) {
     draggedPlayer = null;
   });
 
-  // Dokunma beklenmedik şekilde iptal edilirse
   element.addEventListener("touchcancel", () => {
     if (clone) {
       clone.remove();
@@ -951,8 +956,6 @@ function addTouchDragSupport(element, playerName) {
     draggedPlayer = null;
   });
 }
-
-
 
 function handleDropOnSlot(e, targetSlotId, targetTeamKey) {
   e.preventDefault();
@@ -1059,8 +1062,11 @@ document.querySelectorAll(".size-btn").forEach(btn => {
   });
 });
 
-$("createTeams").addEventListener("click", createTeams);
+// "Takımları Oluştur" butonu artık mevcut kadroyu karıştırmadan korur
+$("createTeams").addEventListener("click", refreshTeamDisplay);
+// "Yeniden Karıştır" butonu rastgele karıştırmaya devam eder
 $("reshuffle").addEventListener("click", createTeams);
+
 $("clearAll").addEventListener("click", () => {
   playerInput.value = "";
   teams = { black: [], white: [], bench: [] };
@@ -1071,14 +1077,19 @@ $("clearAll").addEventListener("click", () => {
   showMessage("Tüm veriler temizlendi.");
 });
 
+// Formasyon değiştiğinde sahayı komple boşaltıp istenen alert mesajını gösteren yapı
 ["blackFormation", "whiteFormation"].forEach(id => {
   $(id).addEventListener("change", () => {
-    if (!results.hidden) renderPitch();
+    pitchAssignments = {};
+    if (!results.hidden) {
+      renderPitch();
+      renderBench();
+    }
     saveState();
+    alert("sefacim takimlari olustur butonuna tikla");
   });
 });
 
-    
 $("shareDraft").addEventListener("click", async () => {
   if (results.hidden || (teams.black.length === 0 && teams.white.length === 0)) {
     showMessage("Önce oyuncu listesinden takımları oluşturmalısın.", "error");
@@ -1178,7 +1189,6 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
 
       showMessage("Paylaşım menüsü açıldı.", "success");
     } else {
-      // Dosya paylaşımı desteklenmiyorsa PNG'yi indir
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
 
@@ -1188,7 +1198,6 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
 
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      // WhatsApp sohbet ekranını aç
       const text = encodeURIComponent(
         "Maç kadromuz ve saha dizilişimiz ⚽"
       );
@@ -1216,7 +1225,6 @@ $("sharePitchWhatsApp").addEventListener("click", async () => {
     button.disabled = false;
   }
 });
-
 
 $("downloadPitchImg").addEventListener("click", async () => {
   const panel = document.querySelector(".pitch-panel");
