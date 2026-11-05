@@ -662,23 +662,16 @@ function getPermutations(arr) {
 function populateFormationSelects() {
   const options = generateFormations(currentTeamSize);
   const defVal = getDefaultFormation(currentTeamSize);
-
   ["blackFormation", "whiteFormation"].forEach(id => {
-    const sel = $(id);
-    const prevVal = sel.value;
-    sel.innerHTML = "";
-    options.forEach(f => {
-      const opt = document.createElement("option");
-      opt.value = f;
-      opt.textContent = `${f} Formasyonu`;
-      sel.appendChild(opt);
+    $(id).addEventListener("change", () => {
+      pitchAssignments = {};
+      if (!results.hidden) {
+        renderPitch();
+        renderBench();
+      }
+      saveState();
+      alert("sefacim takimlari olustur butonuna tikla");
     });
-    
-    if (options.includes(prevVal)) {
-      sel.value = prevVal;
-    } else if (options.includes(defVal)) {
-      sel.value = defVal;
-    }
   });
 }
 
